@@ -1,7 +1,7 @@
 import streamlit as st
 from korean_lunar_calendar import KoreanLunarCalendar
 
-# 1. 디자인 및 시인성 설정
+# 1. 페이지 설정 및 디자인
 st.set_page_config(page_title="2080 정통 명리 마스터", layout="centered")
 
 st.markdown("""
@@ -45,11 +45,11 @@ with st.form("saju_form"):
         t_options.append(f"{i:02d}시 ~ {i+1:02d}시")
     t_options.append("23시 ~ 00시")
     
-    u_t = st.selectbox("태어난 시간 (1시간 단위 구간)", t_options)
+    u_t = st.selectbox("태어난 시간", t_options)
     
-    submitted = st.form_submit_button("운명의 구성 확인하기")
+    submitted = st.form_submit_button("운명의 흐름 분석 시작")
 
-# 3. 결과 출력
+# 3. 분석 및 결과 출력
 if submitted:
     if not u_name:
         st.error("성함을 입력해 주세요.")
@@ -63,10 +63,10 @@ if submitted:
             
             ganji = cal.getChineseGapJaString().split()
             
-            # 시간 구간을 명리 시주로 매칭
-            def get_siju(time_str):
+            # 시간 구간 매칭 함수
+            def get_siju_name(time_str):
                 if time_str == "시간 모름": return "??"
-                h = int(time_str[:2]) # 앞의 두 글자(시간)만 추출
+                h = int(time_str[:2])
                 if h in [23, 0]: return "庚子"
                 if h in [1, 2]: return "辛丑"
                 if h in [3, 4]: return "壬寅"
@@ -74,14 +74,14 @@ if submitted:
                 if h in [7, 8]: return "甲辰"
                 if h in [9, 10]: return "乙巳"
                 if h in [11, 12]: return "丙午"
-                if h in [13, 14]: return "丁미"
+                if h in [13, 14]: return "丁未"
                 if h in [15, 16]: return "戊申"
                 if h in [17, 18]: return "己酉"
                 if h in [19, 20]: return "庚戌"
                 if h in [21, 22]: return "辛亥"
                 return "??"
 
-            siju = get_siju(u_t)
+            siju = get_siju_name(u_t)
 
             st.markdown("---")
             p_cols = st.columns(4)
@@ -90,4 +90,21 @@ if submitted:
             
             for i in range(4):
                 with p_cols[i]:
-                    st.markdown(f"<div class='pillar-box'><div style='color:#
+                    st.markdown(f"<div class='pillar-box'><div style='color:#9ca3af;'>{p_labels[i]}</div><div class='pillar-ganji'>{p_values[i]}</div></div>", unsafe_allow_html=True)
+
+            st.markdown(f"""
+            <div class="result-card">
+                <div class="res-title">📜 {u_name}님의 분석 결과</div>
+                <div class="res-body">
+                    <span class="res-sub">● 타고난 기질</span>
+                    분석 결과 귀하는 {ganji[2]}의 기운을 바탕으로 매우 창의적이고 독립적인 성향을 지니고 있습니다. 
+                    <br><br>
+                    <span class="res-sub">● 2080년까지의 대운 흐름</span>
+                    2026년부터 본격적으로 기운이 상승하며 사회적 명예와 성취가 따르는 시기로 진입합니다. 중년 이후에는 안정적인 기반 위에서 본인의 전문성을 널리 알리게 되며, 2080년까지 평온하고 풍요로운 삶이 지속되는 명식입니다.
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            st.balloons()
+            
+        except Exception as e:
+            st.error("입력하신 날짜를 다시 확인해 주세요.")
