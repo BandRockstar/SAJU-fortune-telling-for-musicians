@@ -1,88 +1,51 @@
 import streamlit as st
 from korean_lunar_calendar import KoreanLunarCalendar
 import pandas as pd
+import datetime
 
 st.set_page_config(page_title="뮤지션을 위한 사주보기", layout="wide")
-
 st.title("🎸 뮤지션을 위한 사주보기")
 
-st.write("생년월일을 입력하면 사주와 음악적 성향을 분석합니다.")
-
-# -------------------------------
-# 오행 매핑
-# -------------------------------
-
 element_map = {
-    "갑":"목","을":"목",
-    "병":"화","정":"화",
-    "무":"토","기":"토",
-    "경":"금","신":"금",
-    "임":"수","계":"수",
-
-    "인":"목","묘":"목",
-    "사":"화","오":"화",
-    "진":"토","술":"토","축":"토","미":"토",
-    "신":"금","유":"금",
-    "해":"수","자":"수"
+"甲":"목","乙":"목",
+"丙":"화","丁":"화",
+"戊":"토","己":"토",
+"庚":"금","辛":"금",
+"壬":"수","癸":"수",
+"寅":"목","卯":"목",
+"巳":"화","午":"화",
+"辰":"토","戌":"토","丑":"토","未":"토",
+"申":"금","酉":"금",
+"亥":"수","子":"수"
 }
-
-# -------------------------------
-# 십신 표 (간단)
-# -------------------------------
 
 ten_gods = {
-
-"목":{
-"목":"비견",
-"화":"식신",
-"토":"편재",
-"금":"편관",
-"수":"편인"
-},
-
-"화":{
-"목":"편인",
-"화":"비견",
-"토":"식신",
-"금":"편재",
-"수":"편관"
-},
-
-"토":{
-"목":"편관",
-"화":"편인",
-"토":"비견",
-"금":"식신",
-"수":"편재"
-},
-
-"금":{
-"목":"편재",
-"화":"편관",
-"토":"편인",
-"금":"비견",
-"수":"식신"
-},
-
-"수":{
-"목":"식신",
-"화":"편재",
-"토":"편관",
-"금":"편인",
-"수":"비견"
+"목":{"목":"비견","화":"식신","토":"편재","금":"편관","수":"편인"},
+"화":{"목":"편인","화":"비견","토":"식신","금":"편재","수":"편관"},
+"토":{"목":"편관","화":"편인","토":"비견","금":"식신","수":"편재"},
+"금":{"목":"편재","화":"편관","토":"편인","금":"비견","수":"식신"},
+"수":{"목":"식신","화":"편재","토":"편관","금":"편인","수":"비견"}
 }
 
+hour_branch = {
+"자(23-01)":"子","축(01-03)":"丑","인(03-05)":"寅","묘(05-07)":"卯",
+"진(07-09)":"辰","사(09-11)":"巳","오(11-13)":"午","미(13-15)":"未",
+"신(15-17)":"申","유(17-19)":"酉","술(19-21)":"戌","해(21-23)":"亥"
 }
 
-# -------------------------------
-# 입력
-# -------------------------------
+st.header("출생 정보")
 
 c1,c2,c3 = st.columns(3)
 
-year = c1.number_input("출생 연도",1900,2100,1985)
-month = c2.number_input("출생 월",1,12,1)
-day = c3.number_input("출생 일",1,31,1)
+gender = c1.selectbox("성별",["남","여"])
+calendar_type = c2.selectbox("달력",["양력","음력"])
+leap = c3.selectbox("윤달",["아니오","윤달"])
+
+c4,c5,c6 = st.columns(3)
+
+year = int(c4.number_input("출생 연도",1900,2050,1985))
+month = int(c5.number_input("출생 월",1,12,1))
+day = int(c6.number_input("출생 일",1,31,1))
 
 hour = st.selectbox("출생 시간",[
 "모름",
@@ -91,216 +54,151 @@ hour = st.selectbox("출생 시간",[
 "신(15-17)","유(17-19)","술(19-21)","해(21-23)"
 ])
 
-# -------------------------------
-# 사주 계산
-# -------------------------------
+target_year = int(st.number_input("분석할 년도",1900,2050,2026))
 
-if st.button("사주 보기"):
+if st.button("사주 분석"):
 
-    cal = KoreanLunarCalendar()
-    cal.setSolarDate(year,month,day)
+    try:
 
-    ganji = cal.getChineseGapJaString().split()
+        if calendar_type == "양력":
+            datetime.date(year,month,day)
 
-    if len(ganji) < 3:
-        st.error("사주 계산 오류")
-        st.stop()
+        cal = KoreanLunarCalendar()
 
-    year_p = ganji[0]
-    month_p = ganji[1]
-    day_p = ganji[2]
+        if calendar_type == "양력":
+            cal.setSolarDate(year,month,day)
+        else:
+            is_leap = True if leap=="윤달" else False
+            cal.setLunarDate(year,month,day,is_leap)
 
-    hour_p = "--"
+        try:
+            ganji_raw = cal.getChineseGapJaString()
+        except:
+            ganji_raw = cal.getGapJaString()
 
-    pillars = [year_p,month_p,day_p]
+        tokens = (
+            ganji_raw
+            .replace("년"," ")
+            .replace("월"," ")
+            .replace("일"," ")
+            .strip()
+            .split()
+        )
 
-    # -------------------------------
-    # 사주 출력
-    # -------------------------------
+        if len(tokens) < 3:
+            st.error("사주 계산 실패")
+            st.stop()
 
-    st.header("사주 팔자")
+        year_p = tokens[0][:2]
+        month_p = tokens[1][:2]
+        day_p = tokens[2][:2]
 
-    col1,col2,col3,col4 = st.columns(4)
+        hour_p = "--"
+        if hour != "모름":
+            hour_p = hour_branch[hour]
 
-    col1.metric("년주",year_p)
-    col2.metric("월주",month_p)
-    col3.metric("일주",day_p)
-    col4.metric("시주",hour_p)
+        pillars = [year_p, month_p, day_p]
 
-    # -------------------------------
-    # 오행 계산
-    # -------------------------------
+        st.header("사주 팔자")
 
-    elements = {
-    "목":0,
-    "화":0,
-    "토":0,
-    "금":0,
-    "수":0
-    }
+        c1,c2,c3,c4 = st.columns(4)
 
-    for p in pillars:
+        c1.metric("년주",year_p)
+        c2.metric("월주",month_p)
+        c3.metric("일주",day_p)
+        c4.metric("시지",hour_p)
 
-        g = p[0]
-        j = p[1]
+        elements = {"목":0,"화":0,"토":0,"금":0,"수":0}
 
-        if g in element_map:
-            elements[element_map[g]] += 1
+        for p in pillars:
 
-        if j in element_map:
-            elements[element_map[j]] += 1
+            if len(p) != 2:
+                continue
 
-    st.header("오행 분석")
+            g = p[0]
+            j = p[1]
 
-    df = pd.DataFrame(
-    list(elements.items()),
-    columns=["오행","개수"]
-    )
+            if g in element_map:
+                elements[element_map[g]] += 1
 
-    st.bar_chart(df.set_index("오행"))
+            if j in element_map:
+                elements[element_map[j]] += 1
 
-    # -------------------------------
-    # 일간
-    # -------------------------------
+        st.header("오행 분석")
 
-    day_stem = day_p[0]
+        df = pd.DataFrame({
+            "오행": list(elements.keys()),
+            "개수": list(elements.values())
+        })
 
-    day_element = element_map.get(day_stem,"")
+        df["개수"] = df["개수"].astype(int)
 
-    st.subheader(f"일간 : {day_stem} ({day_element})")
+        st.bar_chart(df.set_index("오행"))
 
-    # -------------------------------
-    # 십신 계산
-    # -------------------------------
+        day_stem = day_p[0]
+        day_element = element_map.get(day_stem,"")
 
-    st.header("십신 분석")
+        st.header("십신 분석")
 
-    ten_list = []
+        ten_list = []
 
-    for p in pillars:
+        for p in pillars:
 
-        g = p[0]
-        g_el = element_map.get(g,"")
+            g = p[0]
+            g_el = element_map.get(g,"")
 
-        if g_el and day_element:
-            tg = ten_gods[day_element][g_el]
-            ten_list.append((p,tg))
+            if day_element and g_el:
+                tg = ten_gods[day_element][g_el]
+                ten_list.append((p,tg))
 
-    tg_df = pd.DataFrame(ten_list,columns=["기둥","십신"])
+        tg_df = pd.DataFrame(ten_list,columns=["기둥","십신"])
+        st.table(tg_df)
 
-    st.table(tg_df)
+        st.header("뮤지션 성향")
 
-    # -------------------------------
-    # 성향 분석
-    # -------------------------------
+        music = []
 
-    st.header("성향 분석")
+        if elements["목"]>=2: music.append("작곡 능력")
+        if elements["화"]>=2: music.append("무대 퍼포먼스")
+        if elements["금"]>=2: music.append("리듬 감각")
+        if elements["수"]>=2: music.append("감성 표현")
+        if elements["토"]>=2: music.append("밴드 안정형")
 
-    char = []
+        if len(music)==0:
+            music.append("올라운드 뮤지션")
 
-    if elements["목"] >= 2:
-        char.append("창의적이고 새로운 것을 만드는 성향")
+        for m in music:
+            st.write("•",m)
 
-    if elements["화"] >= 2:
-        char.append("표현력이 강하고 무대 체질")
+        st.header("추천 장르")
 
-    if elements["금"] >= 2:
-        char.append("리듬감과 구조 감각이 뛰어남")
+        genre = []
 
-    if elements["수"] >= 2:
-        char.append("감성적이고 음악적 분위기 표현이 좋음")
+        if elements["화"]>=2: genre.append("록")
+        if elements["목"]>=2: genre.append("블루스")
+        if elements["수"]>=2: genre.append("발라드")
+        if elements["금"]>=2: genre.append("재즈")
+        if elements["토"]>=2: genre.append("팝")
 
-    if elements["토"] >= 2:
-        char.append("꾸준하고 안정적인 스타일")
+        if len(genre)==0:
+            genre.append("올라운드 장르")
 
-    if len(char)==0:
-        char.append("오행 균형형 성향")
+        for g in genre:
+            st.write("•",g)
 
-    for c in char:
-        st.write("•",c)
+        st.header(f"{target_year}년 운세")
 
-    # -------------------------------
-    # 뮤지션 분석
-    # -------------------------------
+        current_year = datetime.datetime.now().year
+        diff = target_year - current_year
 
-    st.header("🎸 뮤지션 성향 분석")
+        if diff > 0:
+            st.write("새로운 기회가 생길 가능성")
+        elif diff < 0:
+            st.write("정리와 재정비의 시기")
+        else:
+            st.write("변화가 많은 해")
 
-    music = []
+        st.success("분석 완료 🎵")
 
-    if elements["목"] >= 2:
-        music.append("작곡 능력 높음")
-
-    if elements["화"] >= 2:
-        music.append("무대 퍼포먼스 강함")
-
-    if elements["금"] >= 2:
-        music.append("리듬 중심 음악 적합")
-
-    if elements["수"] >= 2:
-        music.append("감성적인 음악 스타일")
-
-    if elements["토"] >= 2:
-        music.append("밴드 안정형 플레이어")
-
-    if len(music)==0:
-        music.append("다양한 장르 적응형")
-
-    for m in music:
-        st.write("•",m)
-
-    # -------------------------------
-    # 장르 추천
-    # -------------------------------
-
-    st.header("🎶 추천 음악 장르")
-
-    genre = []
-
-    if elements["화"] >= 2 and elements["목"] >= 2:
-        genre.append("록 / 블루스")
-
-    if elements["금"] >= 2:
-        genre.append("펑크 / 재즈")
-
-    if elements["수"] >= 2:
-        genre.append("발라드 / 포크")
-
-    if elements["토"] >= 2:
-        genre.append("팝 / 세션 음악")
-
-    if len(genre)==0:
-        genre.append("올라운드 장르")
-
-    for g in genre:
-        st.write("•",g)
-
-    # -------------------------------
-    # 직업 추천
-    # -------------------------------
-
-    st.header("🎸 뮤지션 직업 추천")
-
-    jobs = []
-
-    if elements["목"] >= 2:
-        jobs.append("작곡가")
-
-    if elements["화"] >= 2:
-        jobs.append("보컬 / 프론트맨")
-
-    if elements["금"] >= 2:
-        jobs.append("드러머 / 베이시스트")
-
-    if elements["수"] >= 2:
-        jobs.append("싱어송라이터")
-
-    if elements["토"] >= 2:
-        jobs.append("프로듀서 / 편곡가")
-
-    if len(jobs)==0:
-        jobs.append("세션 연주자")
-
-    for j in jobs:
-        st.write("•",j)
-
-    st.success("분석 완료 🎵")
+    except Exception:
+        st.error("날짜 입력 오류 또는 사주 계산 실패")
