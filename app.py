@@ -63,4 +63,31 @@ with st.form("saju_form"):
     submit_btn = st.form_submit_button("운명의 흐름 분석하기")
 
 if submit_btn:
-    if not
+    if not name:
+        st.error("성함을 입력해야 분석이 가능합니다.")
+    else:
+        pillars, fortune = run_saju_engine(y_in, m_in, d_in, t_opts.index(selected_t), gender, date_type, is_inter)
+        
+        st.markdown("---")
+        # 사주 원국 시각화
+        p_cols = st.columns(4)
+        labels = ["시주", "일주", "월주", "연주"]
+        for i in range(4):
+            with p_cols[i]:
+                st.markdown(f"<div class='pillar-box'><div style='color:#9ca3af; font-size:0.85rem;'>{labels[i]}</div><div class='pillar-ganji'>{pillars[i]}</div></div>", unsafe_allow_html=True)
+
+        # 상세 풀이 결과
+        st.markdown(f"""
+        <div class="result-card">
+            <div class="res-title">📜 {name}님의 사주 총평</div>
+            <div class="res-text">분석 결과, 귀하는 <b>{pillars[1]}</b>의 기운을 중심으로 강한 창의성과 실천력을 타고났습니다. 
+            특히 예술적 기질이 뛰어나며, 나이가 들수록 그 깊이가 더해져 주변의 존경을 받는 명식입니다.</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # 2080 장기 운세
+        st.markdown('<div style="margin-top:25px; font-weight:bold; color:#d4af37; font-size:1.3rem;">📅 2080년까지의 생애 주기별 흐름</div>', unsafe_allow_html=True)
+        for f in fortune:
+            st.markdown(f"<div class='timeline-item'><b>{f['period']}</b>: {f['desc']}</div>", unsafe_allow_html=True)
+        
+        st.balloons()
