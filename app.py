@@ -34,7 +34,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown("<div class='main-title'><h1>🎸 음악인을 위한 사주통변</h1></div>", unsafe_allow_html=True)
+st.markdown("<div class='main-title'><h1>🎸 음악인을 위한 사주통변 Ver 1.0</h1></div>", unsafe_allow_html=True)
 
 # 2️⃣ 입력 설정
 hour_time_map = {
@@ -73,7 +73,7 @@ def get_samjae_status(year_ganzhi, target_year):
         return f"현재 {target_year}년은 귀하의 **{status}** 기간입니다.", "samjae-active"
     return f"{target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.", "samjae-inactive"
 
-# 4️⃣ 초장문 통변 엔진 (300자 이상 보강)
+# 4️⃣ 초장문 통변 엔진 (300자 이상)
 def get_ultra_report(d_gan, max_elem, name):
     gen_data = {
         '목': f"본인은 {d_gan}의 정기를 타고나 만물을 소생시키는 생명력과 따뜻한 인정을 지닌 성품을 소유하고 있습니다. {max_elem}의 기운이 발달한 명식은 명예를 중시하며, 어떠한 고난 속에서도 굴하지 않고 하늘로 뻗어가는 나무처럼 올곧은 신념을 지키는 강직함이 돋보입니다. 타인에게는 자상하고 배려심이 깊어 주변에 사람이 모여드는 편이나, 본인의 내면에는 자신만의 원칙을 고수하려는 고집과 독립심이 강하게 자리 잡고 있습니다. 이러한 성향은 사회생활에서 신뢰받는 리더의 모습으로 나타나며, 명분과 실리를 동시에 추구하는 균형 잡힌 가치관을 통해 인생의 후반부로 갈수록 더욱 견고한 성공의 기틀을 마련하게 될 것입니다. 인간관계에서는 신의를 최우선으로 여기며, 한 번 맺은 인연을 소중히 여기는 깊은 인격적 향기를 지니고 있습니다. 특히 창의적인 기획력과 타인을 포용하는 자비로운 마음씨가 결합되어 공동체 내에서 정신적 지주 역할을 수행하게 될 것입니다.",
@@ -111,19 +111,15 @@ if submitted:
         gen_text, mus_text = get_ultra_report(d_gan, max_elem, display_name)
         samjae_msg, samjae_class = get_samjae_status(ba_zi[0], target_y)
 
-        # 리포트 헤더
         st.markdown(f"### 🍀 {display_name}님의 심층 리포트")
         st.markdown("<div class='saju-grid'>" + "".join([f"<div class='saju-box'><small>{l}</small><br>{v}</div>" for l, v in zip(['년주','월주','일주','시주'], ba_zi)]) + "</div>", unsafe_allow_html=True)
         st.markdown("<div class='ohaeng-grid'>" + "".join([f"<div class='ohaeng-item'><small>{k}</small><br><b>{v}자</b></div>" for k,v in counts.items()]) + "</div>", unsafe_allow_html=True)
 
-        # 삼재 정보
         st.markdown(f"<div class='{samjae_class}'><b>🚫 삼재(三災) 정보: {samjae_msg}</b><br><small>삼재는 9년마다 돌아오는 3년의 조심하는 시기를 뜻합니다.</small></div>", unsafe_allow_html=True)
 
-        # 일반 성정 및 음악 통변 (300자 이상 보강 버전)
         st.markdown(f"<div class='section-card'><h2>👤 타고난 성정과 일반 통변</h2><div class='content-text'>{gen_text}</div></div>", unsafe_allow_html=True)
         st.markdown(f"<div class='music-card'><h2>🎸 타고난 음악적 사주 통변</h2><div class='content-text'>{mus_text}</div></div>", unsafe_allow_html=True)
 
-        # 추천 음악 포지션 및 전문 재능 (고정된 장문 내용)
         st.markdown(f"""
         <div class='position-card'>
             <h2>✨ 추천 음악 포지션 및 전문 재능</h2>
@@ -151,7 +147,6 @@ if submitted:
         </div>
         """, unsafe_allow_html=True)
 
-        # 연도별 운세 및 음악적 흐름 (300자 이상 보강)
         st.markdown(f"### 📅 {target_y}년 심층 운세")
         st.markdown(f"""
         <div class='target-year-card'>
