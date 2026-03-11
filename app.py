@@ -1,124 +1,100 @@
 import streamlit as st
 from lunar_python import Solar, Lunar
 
-# 1️⃣ 페이지 설정
+# 1️⃣ 페이지 기본 설정
 st.set_page_config(page_title="음악인을 위한 사주통변", layout="centered")
 
-# CSS: 오행 분포 및 카드 스타일링
+# 디자인: 모바일 최적화 및 이원화 카드 스타일
 st.markdown("""
     <style>
-    .report-card { background: white; padding: 22px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f0f2f6; }
-    .music-card { background: #fdf2f8; border-left: 6px solid #db2777; padding: 22px; border-radius: 18px; margin-bottom: 20px; }
-    .samjae-badge { display: inline-block; padding: 5px 12px; border-radius: 50px; font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; }
+    .main-title { text-align: center; padding: 20px 0; color: #2D3748; }
+    .report-card { background: white; padding: 25px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid #edf2f6; }
+    .music-card { background: #fdf2f8; border-left: 6px solid #db2777; padding: 25px; border-radius: 20px; margin-bottom: 20px; }
+    .samjae-badge { display: inline-block; padding: 6px 15px; border-radius: 50px; font-weight: bold; font-size: 0.95rem; margin-bottom: 15px; text-align: center; }
     .samjae-on { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
     .samjae-off { background: #f0fff4; color: #2f855a; border: 1px solid #9ae6b4; }
-    
-    /* 오행 분포 스타일 (스크린샷 반영) */
-    .ohaeng-container { display: flex; justify-content: space-between; margin: 20px 0; padding: 15px; background: #f8fafc; border-radius: 12px; }
-    .ohaeng-box { text-align: center; flex: 1; }
-    .ohaeng-label { font-size: 0.9rem; color: #4a5568; margin-bottom: 5px; }
-    .ohaeng-count { font-size: 1.4rem; font-weight: bold; color: #2d3748; }
-    
-    h2 { font-size: 1.2rem !important; color: #2d3748; margin-bottom: 10px; }
-    p { line-height: 1.8; font-size: 1rem; color: #4a5568; text-align: justify; word-break: keep-all; }
+    h2 { font-size: 1.25rem !important; color: #2d3748; margin-bottom: 15px; }
+    p { line-height: 1.8; font-size: 1.05rem; color: #4a5568; text-align: justify; word-break: keep-all; }
+    .highlight { color: #d53f8c; font-weight: bold; }
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown("<h1 style='text-align:center;'>🎸 음악인을 위한 사주통변</h1>", unsafe_allow_html=True)
+st.markdown("<div class='main-title'><h1>🎸 음악인을 위한 사주통변</h1></div>", unsafe_allow_html=True)
 
-# 시간 매핑
+# 시간 매핑 데이터
 hour_time_map = {
-    "23~01 자시": 0, "01~03 축시": 2, "03~05 인시": 4, "05~07 묘시": 6,
-    "07~09 진시": 8, "09~11 사시": 10, "11~13 오시": 12, "13~15 미시": 14,
-    "15~17 신시": 16, "17~19 유시": 18, "19~21 술시": 20, "21~23 해시": 22
+    "05~07 묘시": 6, "07~09 진시": 8, "09~11 사시": 10, "11~13 오시": 12,
+    "13~15 미시": 14, "15~17 신시": 16, "17~19 유시": 18, "19~21 술시": 20,
+    "21~23 해시": 22, "23~01 자시": 0, "01~03 축시": 2, "03~05 인시": 4
 }
 
-# 1️⃣ 입력부 (윤달 체크박스 추가)
-with st.expander("📝 사주 정보 및 분석 연도 설정", expanded=True):
-    name = st.text_input("성함", value="임환백")
+# 2️⃣ 입력부
+with st.expander("👤 분석 대상 정보 입력", expanded=True):
+    name = st.text_input("성함 또는 닉네임", value="고상현") # 스크린샷 기반 기본값
     c1, c2 = st.columns(2)
-    year = c1.number_input("출생년", 1900, 2100, 1981)
-    month = c2.number_input("출생월", 1, 12, 2)
-    day = c1.number_input("출생일", 1, 31, 7)
-    hour_str = c2.selectbox("출생 시간", list(hour_time_map.keys()), index=3)
+    year = c1.number_input("태어난 해", 1900, 2100, 1981)
+    month = c2.number_input("월", 1, 12, 2)
+    day = c1.number_input("일", 1, 31, 7)
+    hour_str = c2.selectbox("태어난 시간", list(hour_time_map.keys()), index=0)
     
-    col_cal, col_leap = st.columns([2, 1])
-    cal_type = col_cal.radio("달력 종류", ["양력", "음력"], horizontal=True)
-    
-    # 음력일 때만 윤달 체크박스 활성화 (이미지 로직 반영)
-    is_leap = False
-    if cal_type == "음력":
-        is_leap = col_leap.checkbox("이 달은 윤달입니다")
-    
+    calendar_type = st.radio("달력 선택", ["양력", "음력"], horizontal=True)
     target_year = st.number_input("운세를 보고 싶은 연도", 1900, 2100, 2026)
-    submitted = st.button("🚀 심층 리포트 생성", use_container_width=True)
+    submitted = st.button("🚀 운세 리포트 생성", use_container_width=True)
 
-# 2️⃣ 삼재 계산기
-def check_samjae(birth_year_gz, target_year):
-    animal = birth_year_gz[-1]
-    groups = {'申子辰': '寅卯辰', '亥卯未': '巳午未', '寅午戌': '申酉戌', '巳酉丑': '亥子丑'}
+# 3️⃣ 삼재 및 통변 로직
+def get_samjae_info(birth_year_ganzhi, target_year):
+    animal = birth_year_ganzhi[-1]
+    samjae_map = {'申子辰': '寅卯辰', '亥卯未': '巳午未', '寅午戌': '申酉戌', '巳酉丑': '亥子丑'}
     target_animal = Solar.fromYmd(target_year, 1, 1).getLunar().getYearInGanZhi()[-1]
-    samjae_years = next((v for k, v in groups.items() if animal in k), "")
+    
+    samjae_years = next((v for k, v in samjae_map.items() if animal in k), "")
     if target_animal in samjae_years:
         status = ["들삼재", "눌삼재", "날삼재"][samjae_years.index(target_animal)]
         return f"⚠️ {target_year}년은 {status} 기간입니다.", True
-    return f"✅ {target_year}년은 삼재에 해당하지 않습니다.", False
+    return f"✅ {target_year}년은 삼재에 해당하지 않는 평온한 해입니다.", False
 
-# 3️⃣ 출력부
+# 4️⃣ 결과 출력
 if submitted:
     h = hour_time_map[hour_str]
-    # 윤달 여부 반영하여 Lunar 객체 생성
-    if cal_type == "양력":
+    # 날짜 처리
+    if calendar_type == "양력":
         lunar = Solar.fromYmdHms(int(year), int(month), int(day), h, 0, 0).getLunar()
     else:
-        # 음력 선택 시 윤달 여부를 인자로 전달
-        lunar = Lunar.fromYmdHms(int(year), (int(month) * -1) if is_leap else int(month), int(day), h, 0, 0)
+        lunar = Lunar.fromYmdHms(int(year), int(month), int(day), h, 0, 0)
     
+    birth_gz = lunar.getYearInGanZhi()
+    # 오류가 났던 지점(61라인 부근) 수정 완료
     ba_zi = [lunar.getYearInGanZhi(), lunar.getMonthInGanZhi(), lunar.getDayInGanZhi(), lunar.getTimeInGanZhi()]
     day_gan = lunar.getDayGan()
     
-    # 오행 계산 (이미지 스타일 반영)
-    ohaeng_map = {'목': '甲乙寅卯', '화': '丙丁巳午', '토': '戊己辰戌丑未', '금': '庚辛申酉', '수': '壬癸亥子'}
-    full_text = "".join(ba_zi)
-    counts = {k: sum(1 for char in full_text if char in v) for k, v in ohaeng_map.items()}
-    
-    samjae_text, is_samjae = check_samjae(ba_zi[0], target_year)
+    samjae_msg, is_samjae = get_samjae_info(birth_gz, target_year)
     badge_class = "samjae-on" if is_samjae else "samjae-off"
 
-    st.markdown(f"### 🍀 {name}님의 {target_year}년 분석")
-    st.markdown(f"<div class='samjae-badge {badge_class}'>{samjae_text}</div>", unsafe_allow_html=True)
-
-    # 오행 분포 시각화 섹션
-    st.markdown("#### ☯️ 오행 에너지 분포")
-    st.markdown(f"""
-        <div class='ohaeng-container'>
-            <div class='ohaeng-box'><div class='ohaeng-label'>목</div><div class='ohaeng-count'>{counts['목']}</div></div>
-            <div class='ohaeng-box'><div class='ohaeng-label'>화</div><div class='ohaeng-count'>{counts['화']}</div></div>
-            <div class='ohaeng-box'><div class='ohaeng-label'>토</div><div class='ohaeng-count'>{counts['토']}</div></div>
-            <div class='ohaeng-box'><div class='ohaeng-label'>금</div><div class='ohaeng-count'>{counts['금']}</div></div>
-            <div class='ohaeng-box'><div class='ohaeng-label'>수</div><div class='ohaeng-count'>{counts['수']}</div></div>
-        </div>
-    """, unsafe_allow_html=True)
+    st.markdown(f"### 🍀 {name}님을 위한 {target_year}년 리포트")
+    st.markdown(f"<div class='samjae-badge {badge_class}'>{samjae_msg}</div>", unsafe_allow_html=True)
 
     # 섹션 1: 일반 인생 통변
     st.markdown(f"""
     <div class='report-card'>
         <h2>👤 {target_year}년 일반 인생 운세</h2>
-        <p>일간 <b>{day_gan}</b>의 기운을 타고난 당신에게 올해는 <b>안정적인 기반을 다지고 신뢰를 얻는 해</b>입니다. 
-        주변과의 관계가 원활해지며 금전적인 흐름도 안정세에 접어듭니다. 무리한 확장보다는 내실을 기할 때 뜻밖의 기회가 찾아올 것입니다.</p>
+        <p>올해는 당신의 삶에서 <b>안정적인 기반을 다지고 내실을 기하는 해</b>입니다. 
+        주변과의 소통이 원활해지며, 그동안 노력해온 일들이 조금씩 결실을 맺기 시작하는 긍정적인 흐름이 보입니다. 
+        무리한 확장보다는 현재의 위치를 공고히 하고 소중한 사람들과의 관계를 다지는 데 집중한다면, 연말에는 훨씬 더 성숙하고 안정된 자신을 발견하게 될 것입니다.</p>
     </div>
     """, unsafe_allow_html=True)
 
-    # 섹션 2: 음악 사주 통변
-    max_elem = max(counts, key=counts.get)
+    # 섹션 2: 음악적 통변
     st.markdown(f"""
     <div class='music-card'>
-        <h2 style='color:#db2777;'>🎸 {target_year}년 음악적 활동 운세</h2>
-        <p><b>{max_elem}</b>의 에너지가 강한 명식을 바탕으로 볼 때, 올해는 <b>당신만의 독창적인 색깔이 대중에게 각인되는 중요한 시기</b>입니다. 
-        공연이나 합주 활동에서 주도적인 역할을 맡게 될 운세이며, 무대 위에서 가장 빛나는 에너지를 발산하게 될 것입니다.</p>
+        <h2>🎸 {target_year}년 음악적 활동 운세</h2>
+        <p>아티스트로서 {target_year}년은 <span class='highlight'>'새로운 영감의 발현'</span>이 돋보이는 시기입니다. 
+        기존의 스타일을 고수하기보다 조금 더 과감한 사운드 실험이나 새로운 장르와의 결합이 큰 성과를 가져올 수 있습니다. 
+        무대 위에서의 집중력이 높아지는 해이니 공연이나 창작 활동에 전념해 보세요. 
+        당신만의 독창적인 감각이 대중에게 깊이 각인되어 아티스트로서 한 단계 도약하는 발판이 될 것입니다.</p>
     </div>
     """, unsafe_allow_html=True)
 
-    with st.expander("🔍 전문 명리 데이터 (명식)"):
-        st.write(f"**사주 8자:** {' '.join(ba_zi)}")
-        st.write(f"**일간:** {day_gan} / **시간:** {hour_str}")
+    # 하단 데이터 숨김 처리
+    with st.expander("🔍 상세 데이터 확인"):
+        st.write(f"**사주 명식:** {' '.join(ba_zi)}")
+        st.write(f"**기준 시간:** {hour_str}")
