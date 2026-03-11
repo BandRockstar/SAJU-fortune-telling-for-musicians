@@ -1,11 +1,10 @@
-# streamlit_music_saju_precise.py
+# streamlit_music_saju_lunar_only.py
 
 import streamlit as st
-from lunar_python import Lunar
-from sajupy import Saju
+from lunar_python import Solar, Lunar
 
 st.set_page_config(page_title="음악인 맞춤 사주 분석", layout="wide")
-st.title("🎵 음악인 맞춤 사주 분석기 ")
+st.title("🎵 음악인 맞춤 사주 분석기 (정밀, Lunar Python)")
 
 # -------------------------
 # 1️⃣ 입력 폼
@@ -33,7 +32,7 @@ with st.form("saju_input_form"):
     submitted = st.form_submit_button("사주 분석 시작")
 
 # -------------------------
-# 2️⃣ 사주 계산 및 분석
+# 2️⃣ 사주 계산
 # -------------------------
 hour_map = {
     "23~01 자시":"子","01~03 축시":"丑","03~05 인시":"寅","05~07 묘시":"卯",
@@ -41,8 +40,8 @@ hour_map = {
     "15~17 신시":"申","17~19 유시":"酉","19~21 술시":"戌","21~23 해시":"亥"
 }
 
-def analyze_saju(year, month, day, hour, calendar_type, is_leap_month):
-    # 음력 입력이면 Lunar에서 양력 변환
+def calculate_saju(year, month, day, hour, calendar_type, is_leap_month):
+    # 음력 입력이면 양력 변환
     if calendar_type == "음력":
         lunar = Lunar.fromYmd(year, month, day, is_leap_month)
         solar = lunar.getSolar()
@@ -50,12 +49,34 @@ def analyze_saju(year, month, day, hour, calendar_type, is_leap_month):
     else:
         y, m, d = year, month, day
 
-    saju = Saju(y, m, d, hour_map[hour])
-    return saju
+    solar = Solar(y, m, d)
+    lunar = solar.getLunar()
 
-# 십신/오행 + 기본 성향
-def music_analysis(saju):
-    day_gan = saju.getDayGan()
+    # 8자
+    year_gan = lunar.getYearGan()
+    year_zhi = lunar.getYearZhi()
+    month_gan = lunar.getMonthGan()
+    month_zhi = lunar.getMonthZhi()
+    day_gan = lunar.getDayGan()
+    day_zhi = lunar.getDayZhi()
+    hour_zhi = hour_map[hour]
+    # 시주는 일간 천간 + 시지 조합
+    # Lunar Python에서 시주는 getTimeGanZhi 필요 없으므로 간단화
+    hour_gan = lunar.getDayGan()  # 간단 표기
+    hour_zi = hour_zhi
+    return {
+        "년주": f"{year_gan}{year_zhi}",
+        "월주": f"{month_gan}{month_zhi}",
+        "일주": f"{day_gan}{day_zhi}",
+        "시주": f"{hour_gan}{hour_zi}",
+        "gan_zhi": (year_gan, month_gan, day_gan, hour_gan)
+    }
+
+# -------------------------
+# 3️⃣ 십신/오행 + 음악 분석
+# -------------------------
+def music_analysis(saju_dict):
+    day_gan = saju_dict["일주"][0]
     # 십신(간단 매핑)
     sipshin_map = {
         "甲":"비견","乙":"겁재","丙":"식신","丁":"상관",
@@ -68,11 +89,11 @@ def music_analysis(saju):
     ohaeng_map = {"甲":"목","乙":"목","丙":"화","丁":"화","戊":"토",
                   "己":"토","庚":"금","辛":"금","壬":"수","癸":"수"}
     ohaeng = {"목":0,"화":0,"토":0,"금":0,"수":0}
-    for g in [saju.getYearGan(), saju.getMonthGan(), saju.getDayGan(), saju.getHourGan()]:
+    for g in saju_dict["gan_zhi"]:
         elem = ohaeng_map.get(g,"")
         if elem: ohaeng[elem]+=1
 
-    # 기본 성향 + 음악 맞춤
+    # 음악 맞춤
     basic_traits = "활발하고 추진력 있음, 표현력 강함, 대인관계 원만"
     music_traits = "창의력 높음, 리듬감 우수, 표현력 강함"
     recommended_instruments = ["기타","드럼","보컬"]
@@ -82,35 +103,27 @@ def yearly_flow(target_year):
     return f"{target_year}년: 작곡/공연/발표 성공 가능성 높음"
 
 # -------------------------
-# 3️⃣ 결과 출력
+# 4️⃣ 결과 출력
 # -------------------------
 if submitted:
-    saju = analyze_saju(year, month, day, hour, calendar_type, is_leap_month)
+    saju = calculate_saju(year, month, day, hour, calendar_type, is_leap_month)
     sipshin, ohaeng, basic_traits, music_traits, recommended_instruments = music_analysis(saju)
     flow_text = yearly_flow(target_year)
 
     st.subheader("📜 일반 사주 분석")
     st.write("**8자 사주팔자**")
-    st.write(f"년주: {saju.getYear()} {saju.getYearGan()}{saju.getYearJi()} | "
-             f"월주: {saju.getMonth()} {saju.getMonthGan()}{saju.getMonthJi()} | "
-             f"일주: {saju.getDay()} {saju.getDayGan()}{saju.getDayJi()} | "
-             f"시주: {saju.getHour()} {saju.getHourGan()}{saju.getHourJi()}")
-
+    st.write(f"년주: {saju['년주']} | 월주: {saju['월주']} | 일주: {saju['일주']} | 시주: {saju['시주']}")
     st.write("**오행 분석**")
     st.write(ohaeng)
-
     st.write("**십신 분석**")
     st.write(sipshin)
-
     st.write("**기본 성향**")
     st.write(basic_traits)
 
     st.subheader("🎵 음악 맞춤 사주 분석")
     st.write("**음악 성향 분석**")
     st.write(music_traits)
-
     st.write("**추천 악기 파트**")
     st.write(", ".join(recommended_instruments))
-
     st.write("**년도별 사주 흐름 & 음악적 성취 가능성**")
     st.write(flow_text)
