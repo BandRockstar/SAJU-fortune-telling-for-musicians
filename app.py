@@ -1,45 +1,43 @@
+```python
 import streamlit as st
 from lunar_python import Solar, Lunar
+import pandas as pd
 
 st.set_page_config(page_title="음악인을 위한 사주통변", layout="centered")
 
 st.markdown("""
 <style>
-.main-title{text-align:center;margin-bottom:20px}
-.saju-grid{display:flex;gap:10px;margin-bottom:20px}
-.saju-box{flex:1;background:#f1f5f9;padding:15px;border-radius:10px;text-align:center;font-size:20px}
-.ohaeng{margin-top:20px}
-.bar{height:20px;background:#4f46e5;margin:5px 0;border-radius:5px}
+.main-title{text-align:center;margin-bottom:30px;font-size:36px;font-weight:700}
+.card{background:#f8fafc;padding:20px;border-radius:12px;margin-bottom:20px}
+.saju-table{width:100%;text-align:center;font-size:22px}
+.ohaeng-bar{height:18px;background:#6366f1;border-radius:6px}
+.report{line-height:1.8;font-size:17px}
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown("<h1 class='main-title'>🎸 음악인을 위한 사주통변</h1>", unsafe_allow_html=True)
+st.markdown("<div class='main-title'>🎸 음악인을 위한 사주통변</div>", unsafe_allow_html=True)
 
-# 입력
-name = st.text_input("이름")
+name=st.text_input("이름")
 
-col1,col2,col3 = st.columns(3)
+c1,c2,c3=st.columns(3)
+with c1:
+    year=st.number_input("출생년",1900,2100,1981)
+with c2:
+    month=st.number_input("출생월",1,12,2)
+with c3:
+    day=st.number_input("출생일",1,31,7)
 
-with col1:
-    year = st.number_input("출생년",1900,2100,1981)
-
-with col2:
-    month = st.number_input("출생월",1,12,2)
-
-with col3:
-    day = st.number_input("출생일",1,31,7)
-
-hour = st.selectbox("출생시간",[
+hour=st.selectbox("출생시간",[
 "모름","23~01 자시","01~03 축시","03~05 인시","05~07 묘시",
 "07~09 진시","09~11 사시","11~13 오시","13~15 미시",
 "15~17 신시","17~19 유시","19~21 술시","21~23 해시"
 ])
 
-cal = st.radio("달력",["양력","음력"])
+cal=st.radio("달력",["양력","음력"])
 
-target_year = st.number_input("운세 연도",1900,2100,2026)
+target_year=st.number_input("운세 연도",1900,2100,2026)
 
-run = st.button("사주 분석")
+run=st.button("사주 분석")
 
 hour_map={
 "모름":None,
@@ -63,6 +61,18 @@ def calc_ohaeng(chars):
         result[k]=sum(c in v for c in chars)
     return result
 
+def music_report(elem):
+
+    data={
+    "목":"서정적 멜로디와 감성적 작곡 능력이 강합니다. 어쿠스틱, 포크, 서사적 음악에 강점을 보입니다.",
+    "화":"무대 장악력과 퍼포먼스 에너지가 강합니다. 보컬 중심 음악에서 강한 매력을 발휘합니다.",
+    "토":"밴드 전체 밸런스를 잡는 능력이 좋으며 프로듀싱 감각이 뛰어납니다.",
+    "금":"정교한 연주력과 사운드 디자인 감각이 뛰어납니다. 기타리스트나 엔지니어 성향.",
+    "수":"몽환적이고 깊은 음악 세계를 만듭니다. 재즈, 앰비언트, 실험음악과 궁합이 좋습니다."
+    }
+
+    return data.get(elem,"")
+
 if run:
 
     try:
@@ -74,7 +84,6 @@ if run:
                 lunar=Solar.fromYmd(year,month,day).getLunar()
             else:
                 lunar=Solar.fromYmdHms(year,month,day,h,0,0).getLunar()
-
         else:
             lunar=Lunar.fromYmd(year,month,day)
 
@@ -87,34 +96,48 @@ if run:
         else:
             time_gz=lunar.getTimeInGanZhi()
 
-        st.subheader("사주 팔자")
+        gan=[year_gz[0],month_gz[0],day_gz[0],time_gz[0] if time_gz!="?" else "?"]
+        ji=[year_gz[1],month_gz[1],day_gz[1],time_gz[1] if time_gz!="?" else "?"]
 
-        st.markdown(f"""
-        <div class="saju-grid">
-        <div class="saju-box">년주<br>{year_gz}</div>
-        <div class="saju-box">월주<br>{month_gz}</div>
-        <div class="saju-box">일주<br>{day_gz}</div>
-        <div class="saju-box">시주<br>{time_gz}</div>
-        </div>
-        """,unsafe_allow_html=True)
+        st.markdown("<div class='card'>",unsafe_allow_html=True)
+
+        df=pd.DataFrame({
+        "": ["천간","지지"],
+        "년주":[gan[0],ji[0]],
+        "월주":[gan[1],ji[1]],
+        "일주":[gan[2],ji[2]],
+        "시주":[gan[3],ji[3]]
+        })
+
+        st.table(df)
+
+        st.markdown("</div>",unsafe_allow_html=True)
 
         chars=year_gz+month_gz+day_gz+(time_gz if time_gz!="?" else "")
 
         counts=calc_ohaeng(chars)
 
-        st.subheader("오행 분석")
+        st.markdown("<div class='card'>",unsafe_allow_html=True)
+
+        st.subheader("오행 균형")
 
         for k,v in counts.items():
-
             st.write(k)
-
-            st.markdown(f"<div class='bar' style='width:{v*40}px'></div>",unsafe_allow_html=True)
+            st.markdown(f"<div class='ohaeng-bar' style='width:{v*60}px'></div>",unsafe_allow_html=True)
 
         max_elem=max(counts,key=counts.get)
 
-        st.success(f"가장 강한 오행 : {max_elem}")
+        st.success(f"주요 오행 : {max_elem}")
 
-        st.subheader("삼재")
+        st.markdown("</div>",unsafe_allow_html=True)
+
+        st.markdown("<div class='card report'>",unsafe_allow_html=True)
+
+        st.subheader("음악적 재능 분석")
+
+        st.write(music_report(max_elem))
+
+        st.markdown("</div>",unsafe_allow_html=True)
 
         zodiac=lunar.getYearZhi()
 
@@ -139,10 +162,16 @@ if run:
         else:
             msg="삼재 아님"
 
+        st.markdown("<div class='card'>",unsafe_allow_html=True)
+
+        st.subheader("삼재")
+
         st.write(f"{target_year}년 : {msg}")
+
+        st.markdown("</div>",unsafe_allow_html=True)
 
     except Exception as e:
 
         st.error("사주 계산 오류")
-
         st.write(e)
+```
