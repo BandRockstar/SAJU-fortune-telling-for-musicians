@@ -1,4 +1,4 @@
-# streamlit_music_saju_lunar_only.py
+# streamlit_music_saju_lunar_only_fixed.py
 
 import streamlit as st
 from lunar_python import Solar, Lunar
@@ -43,11 +43,11 @@ hour_map = {
 def calculate_saju(year, month, day, hour, calendar_type, is_leap_month):
     # 음력 입력이면 양력 변환
     if calendar_type == "음력":
-        lunar = Lunar.fromYmd(year, month, day, is_leap_month)
+        lunar = Lunar.fromYmd(int(year), int(month), int(day), is_leap_month)
         solar = lunar.getSolar()
-        y, m, d = solar.getYear(), solar.getMonth(), solar.getDay()
+        y, m, d = int(solar.getYear()), int(solar.getMonth()), int(solar.getDay())
     else:
-        y, m, d = year, month, day
+        y, m, d = int(year), int(month), int(day)
 
     solar = Solar(y, m, d)
     lunar = solar.getLunar()
@@ -61,8 +61,7 @@ def calculate_saju(year, month, day, hour, calendar_type, is_leap_month):
     day_zhi = lunar.getDayZhi()
     hour_zhi = hour_map[hour]
     # 시주는 일간 천간 + 시지 조합
-    # Lunar Python에서 시주는 getTimeGanZhi 필요 없으므로 간단화
-    hour_gan = lunar.getDayGan()  # 간단 표기
+    hour_gan = day_gan  # 간단 표기
     hour_zi = hour_zhi
     return {
         "년주": f"{year_gan}{year_zhi}",
