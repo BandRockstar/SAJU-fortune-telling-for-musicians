@@ -2,7 +2,7 @@ import streamlit as st
 from lunar_python import Solar, Lunar
 
 # 1️⃣ 페이지 설정 및 모바일 최적화 UI 디자인
-st.set_page_config(page_title="음악인을 위한 사주통변", layout="centered")
+st.set_page_config(page_title="음악인을 위한 사주통변 Ver 1.0", layout="centered")
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
