@@ -1,10 +1,10 @@
 import streamlit as st
 from lunar_python import Solar, Lunar
 
-# 1️⃣ 페이지 설정 및 제목 배치
+# 1️⃣ 페이지 설정
 st.set_page_config(page_title="음악인을 위한 사주통변", layout="centered")
 
-# 모바일 최적화 및 세련된 디자인을 위한 CSS
+# CSS: 디자인 레이아웃 및 폰트 설정
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
@@ -18,15 +18,4 @@ st.markdown("""
     .saju-box { flex: 1; text-align: center; padding: 15px 5px; background: #EDF2F7; border-radius: 12px; font-weight: bold; border: 1px solid #CBD5E0; font-size: 0.95rem; }
     .ohaeng-grid { display: flex; justify-content: space-between; background: #F8FAFC; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
     .ohaeng-item { text-align: center; flex: 1; }
-    h1 { font-size: 1.8rem !important; font-weight: 700; color: #2D3748; }
-    h2 { font-size: 1.3rem !important; color: #2D3748; margin-bottom: 15px; display: flex; align-items: center; }
-    .content-text { line-height: 1.9; font-size: 1.05rem; color: #4A5568; text-align: justify; word-break: keep-all; }
-    .pos-title { font-size: 1.25rem; font-weight: bold; color: #B45309; margin-bottom: 10px; display: block; }
-    </style>
-    """, unsafe_allow_html=True)
-
-st.markdown("<div class='main-title'><h1>🎸 음악인을 위한 사주통변</h1></div>", unsafe_allow_html=True)
-
-hour_time_map = {
-    "시간 선택": None, "23~01 자시": 0, "01~03 축시": 2, "03~05 인시": 4, "05~07 묘시": 6,
-    "07~09 진시": 8, "09~11 사시": 10, "11~13 오시": 1
+    h1 { font
