@@ -1,17 +1,17 @@
-# streamlit_music_saju_pro.py
+# streamlit_music_saju_precise.py
 
 import streamlit as st
-from datetime import datetime, timedelta
+from lunar_python import Lunar
+from sajupy import Saju
 
 st.set_page_config(page_title="음악인 맞춤 사주 분석", layout="wide")
-st.title("🎵 음악인 맞춤 사주 분석기 (정확판)")
+st.title("🎵 음악인 맞춤 사주 분석기 ")
 
 # -------------------------
 # 1️⃣ 입력 폼
 # -------------------------
 with st.form("saju_input_form"):
     st.subheader("기본 정보 입력")
-
     col1, col2 = st.columns(2)
     with col1:
         name = st.text_input("이름")
@@ -33,82 +33,75 @@ with st.form("saju_input_form"):
     submitted = st.form_submit_button("사주 분석 시작")
 
 # -------------------------
-# 2️⃣ 사주 계산 유틸
+# 2️⃣ 사주 계산 및 분석
 # -------------------------
-
-ten_gan = ["갑","을","병","정","무","기","경","신","임","계"]
-twelve_ji = ["자","축","인","묘","진","사","오","미","신","유","술","해"]
-sipshin_list = ["비견","겁재","식신","상관","편재","정재","편관","정관"]
 hour_map = {
-    "23~01 자시":"자","01~03 축시":"축","03~05 인시":"인","05~07 묘시":"묘",
-    "07~09 진시":"진","09~11 사시":"사","11~13 오시":"오","13~15 미시":"미",
-    "15~17 신시":"신","17~19 유시":"유","19~21 술시":"술","21~23 해시":"해"
+    "23~01 자시":"子","01~03 축시":"丑","03~05 인시":"寅","05~07 묘시":"卯",
+    "07~09 진시":"辰","09~11 사시":"巳","11~13 오시":"午","13~15 미시":"未",
+    "15~17 신시":"申","17~19 유시":"酉","19~21 술시":"戌","21~23 해시":"亥"
 }
 
-# 간단한 60갑자 계산용
-def jiazi_index(base_year):
-    # 기준 1984년 갑자년
-    idx = (base_year - 1984) % 60
-    gan = ten_gan[idx % 10]
-    ji = twelve_ji[idx % 12]
-    return gan + ji
+def analyze_saju(year, month, day, hour, calendar_type, is_leap_month):
+    # 음력 입력이면 Lunar에서 양력 변환
+    if calendar_type == "음력":
+        lunar = Lunar.fromYmd(year, month, day, is_leap_month)
+        solar = lunar.getSolar()
+        y, m, d = solar.getYear(), solar.getMonth(), solar.getDay()
+    else:
+        y, m, d = year, month, day
 
-def calculate_saju(year, month, day, hour, calendar_type, is_leap_month):
-    # 현재 버전은 단순 공식 기반
-    # 실제 만세력과 최대한 맞추기 위해 60갑자 기반 계산
-    nian = jiazi_index(year)
-    yue = ten_gan[(year*2 + month)%10] + twelve_ji[(month+1)%12]
-    ri = ten_gan[(year + month + day)%10] + twelve_ji[(year + month + day)%12]
-    si = ten_gan[(ri[0:1] + str(twelve_ji.index(hour_map[hour]))).__hash__()%10] + hour_map[hour]
-    return {"년주": nian, "월주": yue, "일주": ri, "시주": si}
+    saju = Saju(y, m, d, hour_map[hour])
+    return saju
 
-def calculate_sipshin(day_gan):
-    mapping = {"갑":"비견","을":"겁재","병":"식신","정":"상관",
-               "무":"편재","기":"정재","경":"편관","신":"정관",
-               "임":"식신","계":"상관"}
-    return {s: mapping.get(day_gan,"보통") for s in sipshin_list}
+# 십신/오행 + 기본 성향
+def music_analysis(saju):
+    day_gan = saju.getDayGan()
+    # 십신(간단 매핑)
+    sipshin_map = {
+        "甲":"비견","乙":"겁재","丙":"식신","丁":"상관",
+        "戊":"편재","己":"정재","庚":"편관","辛":"정관",
+        "壬":"식신","癸":"상관"
+    }
+    sipshin = {s:sipshin_map.get(day_gan,"보통") for s in ["비견","겁재","식신","상관","편재","정재","편관","정관"]}
 
-def calculate_ohaeng(ganji):
-    ohaeng_map = {"갑":"목","을":"목","병":"화","정":"화","무":"토",
-                  "기":"토","경":"금","신":"금","임":"수","계":"수"}
-    count = {"목":0,"화":0,"토":0,"금":0,"수":0}
-    for v in ganji.values():
-        count.get(ohaeng_map.get(v[0],""),0)
-        elem = ohaeng_map.get(v[0],"")
-        if elem: count[elem]+=1
-    return count
+    # 오행
+    ohaeng_map = {"甲":"목","乙":"목","丙":"화","丁":"화","戊":"토",
+                  "己":"토","庚":"금","辛":"금","壬":"수","癸":"수"}
+    ohaeng = {"목":0,"화":0,"토":0,"금":0,"수":0}
+    for g in [saju.getYearGan(), saju.getMonthGan(), saju.getDayGan(), saju.getHourGan()]:
+        elem = ohaeng_map.get(g,"")
+        if elem: ohaeng[elem]+=1
 
-def basic_traits_analysis():
-    return "활발하고 추진력 있음, 표현력 강함, 대인관계 원만"
+    # 기본 성향 + 음악 맞춤
+    basic_traits = "활발하고 추진력 있음, 표현력 강함, 대인관계 원만"
+    music_traits = "창의력 높음, 리듬감 우수, 표현력 강함"
+    recommended_instruments = ["기타","드럼","보컬"]
+    return sipshin, ohaeng, basic_traits, music_traits, recommended_instruments
 
-def music_analysis(ganji,sipshin,ohaeng):
-    return "창의력 높음, 리듬감 우수, 표현력 강함", ["기타","드럼","보컬"]
-
-def yearly_flow(year):
-    return f"{year}년: 작곡/공연/발표 성공 가능성 높음"
+def yearly_flow(target_year):
+    return f"{target_year}년: 작곡/공연/발표 성공 가능성 높음"
 
 # -------------------------
-# 3️⃣ 계산 및 출력
+# 3️⃣ 결과 출력
 # -------------------------
 if submitted:
-    ganji = calculate_saju(year, month, day, hour, calendar_type, is_leap_month)
-    day_gan = ganji["일주"][0]
-    sipshin = calculate_sipshin(day_gan)
-    ohaeng = calculate_ohaeng(ganji)
-    basic_traits = basic_traits_analysis()
-    music_traits, recommended_instruments = music_analysis(ganji,sipshin,ohaeng)
+    saju = analyze_saju(year, month, day, hour, calendar_type, is_leap_month)
+    sipshin, ohaeng, basic_traits, music_traits, recommended_instruments = music_analysis(saju)
     flow_text = yearly_flow(target_year)
 
     st.subheader("📜 일반 사주 분석")
     st.write("**8자 사주팔자**")
-    st.write(f"년주: {ganji['년주']} | 월주: {ganji['월주']} | 일주: {ganji['일주']} | 시주: {ganji['시주']}")
-    
+    st.write(f"년주: {saju.getYear()} {saju.getYearGan()}{saju.getYearJi()} | "
+             f"월주: {saju.getMonth()} {saju.getMonthGan()}{saju.getMonthJi()} | "
+             f"일주: {saju.getDay()} {saju.getDayGan()}{saju.getDayJi()} | "
+             f"시주: {saju.getHour()} {saju.getHourGan()}{saju.getHourJi()}")
+
     st.write("**오행 분석**")
     st.write(ohaeng)
-    
+
     st.write("**십신 분석**")
     st.write(sipshin)
-    
+
     st.write("**기본 성향**")
     st.write(basic_traits)
 
