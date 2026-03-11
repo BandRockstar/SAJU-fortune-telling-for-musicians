@@ -1,113 +1,94 @@
 import streamlit as st
 from lunar_python import Solar, Lunar
 
-st.set_page_config(page_title="음악인 맞춤 사주 분석", layout="wide")
-st.title("🎵 음악인 맞춤 사주 분석기 (정밀, Lunar Python)")
+# 1️⃣ 설정 및 데이터 매핑
+st.set_page_config(page_title="정통 사주 & 음악 분석", layout="wide")
+st.title("⚖️ 정통 명리 & 음악가 사주 분석 시스템")
 
-# -------------------------
-# 1️⃣ 입력 폼 및 시간 매핑
-# -------------------------
 hour_time_map = {
     "23~01 자시": 0, "01~03 축시": 2, "03~05 인시": 4, "05~07 묘시": 6,
     "07~09 진시": 8, "09~11 사시": 10, "11~13 오시": 12, "13~15 미시": 14,
     "15~17 신시": 16, "17~19 유시": 18, "19~21 술시": 20, "21~23 해시": 22
 }
 
-with st.form("saju_input_form"):
-    st.subheader("기본 정보 입력")
-    col1, col2 = st.columns(2)
-    with col1:
-        name = st.text_input("이름")
-        year = st.number_input("생년", min_value=1900, max_value=2100, step=1, value=1981)
-        month = st.number_input("월", min_value=1, max_value=12, step=1, value=2)
-        day = st.number_input("일", min_value=1, max_value=31, step=1, value=7)
-    with col2:
-        gender = st.selectbox("성별", ["남", "여"])
-        calendar_type = st.radio("양력 / 음력", ["양력", "음력"])
-        hour_str = st.selectbox("시간 (2시간 단위)", list(hour_time_map.keys()))
-        target_year = st.number_input("보고 싶은 연도", min_value=1900, max_value=2100, step=1, value=2026)
+# 2️⃣ 입력 폼
+with st.sidebar:
+    st.header("👤 사주 입력")
+    name = st.text_input("성함", value="홍길동")
+    year = st.number_input("생년", 1900, 2100, 1981)
+    month = st.number_input("월", 1, 12, 2)
+    day = st.number_input("일", 1, 31, 7)
+    hour_str = st.selectbox("시간", list(hour_time_map.keys()), index=3)
+    calendar_type = st.radio("달력", ["양력", "음력"])
+    submitted = st.button("운명 분석 실행")
 
-    submitted = st.form_submit_button("사주 분석 시작")
-
-# -------------------------
-# 2️⃣ 사주 계산 및 오행 분석 로직
-# -------------------------
-def calculate_full_saju(year, month, day, hour_str, calendar_type):
+# 3️⃣ 분석 핵심 로직
+def get_detailed_saju(year, month, day, hour_str, cal_type):
     h = hour_time_map[hour_str]
+    lunar = Lunar.fromYmdHms(int(year), int(month), int(day), h, 0, 0) if cal_type == "음력" else Solar.fromYmdHms(int(year), int(month), int(day), h, 0, 0).getLunar()
     
-    if calendar_type == "양력":
-        solar = Solar.fromYmdHms(int(year), int(month), int(day), h, 0, 0)
-        lunar = solar.getLunar()
-    else:
-        lunar = Lunar.fromYmdHms(int(year), int(month), int(day), h, 0, 0)
-
-    # 8자 정보 가져오기 (시두법 자동 적용)
-    ba_zi = [
-        lunar.getYearInGanZhi(),  # 년주
-        lunar.getMonthInGanZhi(), # 월주
-        lunar.getDayInGanZhi(),   # 일주
-        lunar.getTimeInGanZhi()   # 시주
-    ]
-    
-    # 오행 매핑 (천간 + 지지 합산)
-    ohaeng_map = {
-        '甲': '목', '乙': '목', '寅': '목', '卯': '목',
-        '丙': '화', '丁': '화', '巳': '화', '午': '화',
-        '戊': '토', '己': '토', '辰': '토', '戌': '토', '丑': '토', '未': '토',
-        '庚': '금', '辛': '금', '申': '금', '酉': '금',
-        '壬': '수', '癸': '수', '亥': '수', '子': '수'
-    }
-    
+    ba_zi = [lunar.getYearInGanZhi(), lunar.getMonthInGanZhi(), lunar.getDayInGanZhi(), lunar.getTimeInGanZhi()]
     all_chars = "".join(ba_zi)
-    ohaeng_counts = {"목": 0, "화": 0, "토": 0, "금": 0, "수": 0}
-    for char in all_chars:
-        elem = ohaeng_map.get(char)
-        if elem:
-            ohaeng_counts[elem] += 1
-            
-    return {
-        "ba_zi": ba_zi,
-        "ohaeng": ohaeng_counts,
-        "day_gan": lunar.getDayGan()
+    
+    # 오행 및 색상 매핑
+    ohaeng_info = {
+        '목': {'chars': '甲乙寅卯', 'color': '#28a745', 'desc': '창조, 시작, 인자함'},
+        '화': {'chars': '丙丁巳午', 'color': '#dc3545', 'desc': '열정, 확산, 예의'},
+        '토': {'chars': '戊己辰戌丑未', 'color': '#ffc107', 'desc': '중재, 신용, 안정'},
+        '금': {'chars': '庚辛申酉', 'color': '#6c757d', 'desc': '결단, 의리, 숙살'},
+        '수': {'chars': '壬癸亥子', 'color': '#007bff', 'desc': '지혜, 흐름, 유연'}
     }
+    
+    counts = {k: sum(1 for c in all_chars if c in v['chars']) for k, v in ohaeng_info.items()}
+    return {"ba_zi": ba_zi, "counts": counts, "day_gan": lunar.getDayGan(), "day_zhi": lunar.getDayZhi(), "info": ohaeng_info}
 
-# -------------------------
-# 3️⃣ 결과 출력부
-# -------------------------
+# 4️⃣ 결과 출력
 if submitted:
-    res = calculate_full_saju(year, month, day, hour_str, calendar_type)
-    ba_zi = res["ba_zi"]
-    ohaeng = res["ohaeng"]
+    data = get_detailed_saju(year, month, day, hour_str, calendar_type)
     
-    st.divider()
-    st.subheader(f"📜 {name}님의 사주 분석 결과")
-    
-    # 8자 사주팔자 시각화
+    # --- 섹션 1: 정통 사주 명식 ---
+    st.subheader(f"📑 {name}님의 정통 사주 명식")
     cols = st.columns(4)
-    labels = ["년주", "월주", "일주", "시주"]
+    titles = ["年 (년주)", "月 (월주)", "日 (일주)", "時 (시주)"]
     for i, col in enumerate(cols):
-        col.metric(labels[i], ba_zi[i])
+        with col:
+            st.markdown(f"""
+            <div style="text-align:center; padding:10px; border:1px solid #ddd; border-radius:10px;">
+                <p style="color:gray;">{titles[i]}</p>
+                <h2 style="margin:0;">{data['ba_zi'][i]}</h2>
+            </div>
+            """, unsafe_allow_safe_allow_html=True)
 
-    # 오행 분석
-    st.write("### ☯️ 오행 분포 (총 8자 기준)")
+    # --- 섹션 2: 오행 에너지 균형 (한눈에 보기) ---
+    st.divider()
+    st.subheader("☯️ 오행 에너지 분포")
     o_cols = st.columns(5)
-    for i, (key, val) in enumerate(ohaeng.items()):
-        o_cols[i].write(f"**{key}**: {val}개")
+    for i, (elem, count) in enumerate(data['counts'].items()):
+        with o_cols[i]:
+            st.metric(label=elem, value=f"{count}자")
+            st.progress(count / 4.0 if count <= 4 else 1.0) # 8자 중 비중 시각화
 
-    # 음악 성향 (일간 기준 간략화 예시)
-    st.subheader("🎵 음악적 특징")
-    music_traits = {
-        "甲": "웅장하고 클래식한 선율, 리더십 있는 지휘 스타일",
-        "乙": "섬세하고 화려한 연주, 현악기나 보컬에 강점",
-        "丙": "열정적이고 폭발적인 무대 매너, 금관악기나 록 음악",
-        "丁": "감성적이고 따뜻한 작곡 실력, 재즈나 발라드",
-        "戊": "안정감 있는 베이스, 묵직한 타악기 리듬",
-        "己": "조화로운 화음 중시, 편곡 및 프로듀싱 능력",
-        "庚": "날카롭고 정확한 비트, 일렉 기타나 금속성 사운드",
-        "辛": "정교하고 깔끔한 기교, 피아노나 정밀한 사운드 디자인",
-        "壬": "유연하고 깊이 있는 음악성, 즉흥 연주(잼) 능력",
-        "癸": "변화무쌍하고 몽환적인 분위기, 신디사이저나 엠비언트"
-    }
+    # --- 섹션 3: 일주론 기반 성향 분석 (본질) ---
+    st.divider()
+    col_a, col_b = st.columns([2, 1])
+    with col_a:
+        st.subheader("🔍 사주 본질 분석")
+        day_gan = data['day_gan']
+        # 실제 일주론 데이터를 가져오는 로직 (예시)
+        st.write(f"**본인은 '{day_gan}'의 기운을 타고난 {data['ba_zi'][2]} 일주입니다.**")
+        st.info(f"이 사주는 전체적으로 **{max(data['counts'], key=data['counts'].get)}** 기운이 강하여 성격이 곧고 추진력이 강한 편입니다.")
     
-    trait = music_traits.get(res["day_gan"], "다양한 음악적 재능 보유")
-    st.info(f"**{name}님의 핵심 음악 성향:** {trait}")
+    # --- 섹션 4: 음악적 사주 풀이 (추가 서비스) ---
+    with col_b:
+        st.subheader("🎸 음악적 특화 해석")
+        music_logic = {
+            "목": "선율 위주의 클래식, 어쿠스틱 사운드",
+            "화": "폭발적인 록, 화려한 퍼포먼스, 금관악기",
+            "토": "안정적인 베이스, 리듬 섹션, 프로듀싱",
+            "금": "정교한 비트, 일렉 기타, 금속 타악기",
+            "수": "깊이 있는 재즈, 엠비언트, 신디사이저"
+        }
+        main_elem = data['info'][ '목' if day_gan in '甲乙' else '화' if day_gan in '丙丁' else '토' if day_gan in '戊己' else '금' if day_gan in '庚辛' else '수' ]
+        st.success(f"**추천 장르/사운드**\n\n{music_logic.get(max(data['counts'], key=data['counts'].get))}")
+
+    st.caption("※ 본 분석은 명리학적 통계를 바탕으로 하며, 실제 운명은 개인의 노력에 따라 변화할 수 있습니다.")
