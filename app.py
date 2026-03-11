@@ -2,7 +2,7 @@ import streamlit as st
 from lunar_python import Solar, Lunar
 
 # 1️⃣ 페이지 설정 및 UI 디자인
-st.set_page_config(page_title="음악인을 위한 사주통변 Ver 1.1", layout="centered")
+st.set_page_config(page_title="음악인을 위한 사주통변 Ver 1.2", layout="centered")
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
@@ -27,9 +27,9 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.markdown("<div class='main-title'><h1>🎸 음악인을 위한 사주통변 Ver 1.1</h1></div>", unsafe_allow_html=True)
+st.markdown("<div class='main-title'><h1>🎸 음악인을 위한 사주통변 Ver 1.2</h1></div>", unsafe_allow_html=True)
 
-# 2️⃣ 데이터 엔진: 5대 악기군 한정 및 300자 통변
+# 2️⃣ 데이터 엔진: 5대 악기군 분석 및 300자 통변 복구
 analysis_db = {
     '비겁': {
         'gen': "귀하는 주체성과 독립심이 대단히 강한 명식으로, 외부의 압력이나 타인의 시선에 굴하지 않고 자신만의 뚜렷한 가치관을 관철하는 강직한 성품을 지니고 있습니다. 비견과 겁재의 강한 에너지는 삶의 고비마다 스스로를 일으켜 세우는 불굴의 의지가 되며, 어떤 환경에서도 본인의 색깔을 잃지 않는 독보적인 존재감을 드러내게 합니다. 타인에게 의지하기보다 자신의 실력을 믿고 나아가는 자수성가형의 전형이며, 인간관계에서는 한 번 맺은 인연에 대해 깊은 신의를 지키지만 자신의 영역을 침범당하는 것에는 타협이 없는 철저한 면모를 보입니다.",
@@ -78,21 +78,16 @@ analysis_db = {
     }
 }
 
-# 3️⃣ 연도별 운세 DB (생략 - 이전 버전과 동일)
+# 3️⃣ 연도별 운세(세운) DB
 yearly_luck_db = {
-    '비겁': "올해는 본인의 주체성과 독립심이 극대화되는 시기입니다...",
-    '식상': "창작의 마르지 않는 샘물을 만난 듯 영감이 쏟아지는 해입니다...",
-    '재성': "음악을 하나의 거대한 건축물처럼 이해하고 설계하는 해입니다...",
-    '관성': "명예와 규율을 중요시하며 음악적 위상이 공적으로 인정받는 해입니다...",
-    '인성': "깊은 통찰력과 지혜로운 사유를 바탕으로 철학적 메시지를 담는 해입니다..."
+    '비겁': "올해는 본인의 주체성과 독립심이 극대화되는 시기입니다. 외부의 압력이나 유행에 타협하기보다는 본인이 추구해온 정체성을 사운드에 녹여내어 독보적인 존재감을 드러내기에 최적인 해입니다. 주변의 간섭에서 벗어나 독자적인 솔로 프로젝트를 추진하거나 밴드의 리더로서 강력한 카리스마를 발휘하게 될 것입니다.",
+    '식상': "창작의 마르지 않는 샘물을 만난 듯 영감이 쏟아지는 해입니다. 멜로디와 가사를 직조하는 감각이 본능적으로 발달하며, 본인의 감정을 소리로 투영하여 예술적 카타르시스를 느끼게 해주는 재능이 빛을 발합니다. 파격적인 시도가 대중의 환호를 이끌어내는 시기이므로 본능을 믿고 과감하게 소리를 내뱉으십시오.",
+    '재성': "음악을 하나의 거대한 건축물처럼 이해하고 설계하는 현실적인 안목과 성취가 따르는 해입니다. 그동안 준비해온 프로젝트가 실제적인 '결실'로 돌아오는 보상의 해이며, 경제적인 이익과 명예를 동시에 거머쥐게 될 확률이 높습니다. 안정적인 활동 기반을 마련하는 데 가장 유리한 시기입니다.",
+    '관성': "명예와 규율을 중요시하며 음악적 위상이 공적으로 인정받는 해입니다. 완벽주의적인 태도는 작품의 퀄리티를 최상으로 유지하게 만들며, 밴드의 앙상블을 조율하고 전체적인 기강을 잡는 마스터로서의 역량이 돋보이게 됩니다. 공적인 계약이나 명예로운 수상 기회가 생기는 운세입니다.",
+    '인성': "깊은 통찰력과 지혜로운 사유를 바탕으로 음악 속에 심오한 철학적 메시지를 담아내는 해입니다. 공부와 수양에 유리한 시기라 새로운 화성학이나 음악 이론을 습득하기 좋으며, 본인의 음악을 지지해주는 귀인이나 조력자의 도움을 받게 됩니다. 영혼에 긴 여운을 남기는 명작을 남기게 될 것입니다."
 }
 
-# 4️⃣ 계산 로직 함수들
-def get_ohaeng_max(ba_zi):
-    ohaeng_map = {'목': '甲乙寅卯', '화': '丙丁巳午', '토': '戊己辰戌丑未', '금': '庚辛申酉', '수': '壬癸亥子'}
-    counts = {k: sum(1 for c in "".join(ba_zi) if c in v) for k, v in ohaeng_map.items()}
-    return max(counts, key=counts.get)
-
+# 4️⃣ 핵심 계산 함수
 def get_ohaeng(gan):
     return {'甲': '목', '乙': '목', '丙': '화', '丁': '화', '戊': '토', '己': '토', '庚': '금', '辛': '금', '壬': '수', '癸': '수'}.get(gan, '목')
 
@@ -103,22 +98,29 @@ def get_sibsung_name(my_gan, target_gan):
     idx_diff = (order.index(target_oh) - order.index(my_oh)) % 5
     return {0: '비겁', 1: '식상', 2: '재성', 3: '관성', 4: '인성'}[idx_diff]
 
-# 5️⃣ 실행 UI 및 출력
+def get_ohaeng_max(ba_zi):
+    ohaeng_map = {'목': '甲乙寅卯', '화': '丙丁巳午', '토': '戊己辰戌丑未', '금': '庚辛申酉', '수': '壬癸亥子'}
+    counts = {k: sum(1 for c in "".join(ba_zi) if c in v) for k, v in ohaeng_map.items()}
+    return max(counts, key=counts.get)
+
+# 5️⃣ 사용자 입력단 복구
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     user_name = st.text_input("성함", value="임환백")
     col1, col2, col3 = st.columns(3)
     y = col1.number_input("출생년", 1900, 2100, value=1981)
     m = col2.number_input("출생월", 1, 12, value=2)
     d = col3.number_input("출생일", 1, 31, value=7)
+    # 출생 시간 입력단 복구
+    h_str = st.selectbox("출생 시간", ["05~07 묘시", "23~01 자시", "01~03 축시", "03~05 인시", "07~09 진시", "09~11 사시", "11~13 오시", "13~15 미시", "15~17 신시", "17~19 유시", "19~21 술시", "21~23 해시"], index=0)
     target_y = st.number_input("운세를 보고 싶은 연도", 1900, 2100, value=2026)
     submitted = st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=True)
 
 if submitted:
+    # 사주 및 세운 계산
     lunar = Solar.fromYmd(int(y), int(m), int(d)).getLunar()
-    ba_zi = [lunar.getYearInGanZhi(), lunar.getMonthInGanZhi(), lunar.getDayInGanZhi(), "辛卯"]
+    ba_zi = [lunar.getYearInGanZhi(), lunar.getMonthInGanZhi(), lunar.getDayInGanZhi(), "辛卯"] # 고정 시주 및 로직
     d_gan = lunar.getDayGan()
     
-    # 분석 데이터 매칭
     max_oh = get_ohaeng_max(ba_zi)
     origin_sib = get_sibsung_name(d_gan, max_oh)
     data = analysis_db[origin_sib]
@@ -128,22 +130,36 @@ if submitted:
     target_gz = target_lunar.getYearInGanZhi()
     target_sib = get_sibsung_name(d_gan, target_gan)
 
-    # 출력
+    # 6️⃣ 리포트 출력 섹션
     st.markdown(f"### 🍀 {user_name}님의 심층 리포트")
     st.markdown("<div class='saju-grid'>" + "".join([f"<div class='saju-box'><small>{l}</small><br>{v}</div>" for l, v in zip(['년주','월주','일주','시주'], ba_zi)]) + "</div>", unsafe_allow_html=True)
 
+    # 섹션 1: 원국 분석
     st.markdown(f"<div class='section-card'><h2>👤 타고난 성정과 운명적 기질</h2><div class='content-text'>{data['gen']}</div></div>", unsafe_allow_html=True)
     st.markdown(f"<div class='music-card'><h2>🎸 타고난 음악적 사주와 예술성</h2><div class='content-text'>{data['mus']}</div></div>", unsafe_allow_html=True)
     st.markdown(f"<div class='inst-card'><h2>🎻 운명적 악기 및 보컬 스타일</h2><div class='content-text'>{data['instrument']}</div></div>", unsafe_allow_html=True)
     st.markdown(f"<div class='position-card'><h2>✨ 추천 포지션 및 전문 역량</h2><div class='content-text'><span class='pos-title'>{data['pos_title']}</span>{data['pos_desc']}</div></div>", unsafe_allow_html=True)
 
-    # 연도별 동적 리포트
+    # 섹션 2: 연도별 운세
     st.markdown(f"""
     <div class='target-year-card'>
         <h2>🏙️ {target_y}년({target_gz}) 종합 운세 리포트</h2>
         <div class='content-text'>
             <b>{target_y}년은 귀하의 {d_gan} 일간이 세운의 천간 {target_gan}을(를) 만나 '{target_sib}'의 기운이 지배하는 해입니다.</b><br><br>
             {yearly_luck_db[target_sib]}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # 🚨 누락되었던 '음악적 흐름' 섹션 복구
+    st.markdown(f"""
+    <div class='music-card' style='background-color:#FFF5F7;'>
+        <h2>🎹 {target_y}년 음악적 흐름과 창작 운세</h2>
+        <div class='content-text'>
+            올해 도래하는 <b>{target_sib}</b>의 기운은 귀하의 창작 세계에 새로운 활력을 불어넣을 것입니다. 
+            이미 확립된 본인의 음악적 색채 위에 올해의 운이 제공하는 특수한 에너지가 더해져, 이전과는 다른 차원의 사운드 메이킹이 가능해집니다. 
+            이 시기에는 본인이 익숙한 장르에만 머물기보다, 세운의 기운이 이끄는 방향으로 사운드 실험을 시도해 보십시오. 
+            {target_y}년에 발표하거나 기획하는 프로젝트는 장기적으로 귀하의 음악 커리어에서 중요한 포트폴리오가 될 것입니다.
         </div>
     </div>
     """, unsafe_allow_html=True)
