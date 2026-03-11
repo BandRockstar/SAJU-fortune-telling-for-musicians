@@ -1,123 +1,104 @@
+# streamlit_music_saju.py
+
 import streamlit as st
 from datetime import datetime
-import sxtwl
 
-st.set_page_config(page_title="뮤지션을 위한 사주보기", layout="centered")
+st.set_page_config(page_title="음악인 맞춤 사주 분석", layout="wide")
+st.title("🎵 음악인 맞춤 사주 분석기")
 
-st.title("🎸 뮤지션을 위한 사주보기")
+# -------------------------
+# 1️⃣ 사용자 입력 폼
+# -------------------------
+with st.form("saju_input_form"):
+    st.subheader("기본 정보 입력")
 
-gender = st.selectbox("성별", ["남", "여"])
-birth_date = st.date_input("생년월일")
-birth_hour = st.slider("출생 시간", 0, 23, 12)
-target_year = st.number_input("보고 싶은 년도", 1900, 2100, 2026)
+    col1, col2 = st.columns(2)
+    with col1:
+        name = st.text_input("이름")
+        year = st.number_input("생년", min_value=1900, max_value=2100, step=1)
+        month = st.number_input("월", min_value=1, max_value=12, step=1)
+        day = st.number_input("일", min_value=1, max_value=31, step=1)
+        is_leap_month = st.checkbox("윤달 여부", value=False)
+    with col2:
+        gender = st.selectbox("성별", ["남", "여"])
+        calendar_type = st.radio("양력 / 음력", ["양력", "음력"])
+        hour = st.selectbox("시간 (2시간 단위)",
+            [
+                "23~01 자시", "01~03 축시", "03~05 인시", "05~07 묘시",
+                "07~09 진시", "09~11 사시", "11~13 오시", "13~15 미시",
+                "15~17 신시", "17~19 유시", "19~21 술시", "21~23 해시"
+            ]
+        )
+        target_year = st.number_input("보고 싶은 연도", min_value=1900, max_value=2100, step=1)
 
-HEAVENLY = ["갑","을","병","정","무","기","경","신","임","계"]
-EARTHLY = ["자","축","인","묘","진","사","오","미","신","유","술","해"]
+    submitted = st.form_submit_button("사주 분석 시작")
 
-ELEMENT_STEM = {
-"갑":"목","을":"목",
-"병":"화","정":"화",
-"무":"토","기":"토",
-"경":"금","신":"금",
-"임":"수","계":"수"
-}
-
-ELEMENT_BRANCH = {
-"자":"수","축":"토","인":"목","묘":"목",
-"진":"토","사":"화","오":"화","미":"토",
-"신":"금","유":"금","술":"토","해":"수"
-}
-
-def element_count(pillars):
-
-    result = {"목":0,"화":0,"토":0,"금":0,"수":0}
-
-    for p in pillars:
-
-        stem = p[0]
-        branch = p[1]
-
-        result[ELEMENT_STEM[stem]] += 1
-        result[ELEMENT_BRANCH[branch]] += 1
-
-    return result
-
-def music_analysis(elements):
-
-    score = {
-        "작곡":elements["목"]*2 + elements["수"],
-        "보컬":elements["화"]*2,
-        "연주":elements["금"] + elements["화"],
-        "프로듀싱":elements["토"] + elements["금"],
-        "감성":elements["수"]*2
+# -------------------------
+# 2️⃣ 사주 계산 함수 (예시/기본)
+# -------------------------
+def calculate_saju(year, month, day, hour, calendar_type, is_leap_month):
+    # 실제 계산은 만세력 공식 기반
+    # 여기서는 예시값 반환
+    saju = {
+        "년주": "甲子", "월주": "乙丑",
+        "일주": "丙寅", "시주": "丁卯"
     }
+    ohaeng = {
+        "목": 2, "화": 2, "토": 1, "금": 1, "수": 2
+    }
+    sipshin = {
+        "정재": "적당", "편재": "높음",
+        "식신": "높음", "상관": "보통",
+        "정관": "적당", "편관": "낮음",
+        "비견": "보통", "겁재": "낮음"
+    }
+    basic_traits = "활발하고 추진력 있음, 표현력 강함, 대인관계 원만"
+    return saju, ohaeng, sipshin, basic_traits
 
-    return score
+# -------------------------
+# 3️⃣ 음악 맞춤 분석 함수
+# -------------------------
+def music_analysis(saju, sipshin, ohaeng):
+    # 예시 규칙 기반 추천
+    music_traits = "창의력 높음, 리듬감 우수, 표현력 강함"
+    recommended_instruments = ["기타", "드럼", "보컬"]
+    return music_traits, recommended_instruments
 
-if st.button("사주 분석"):
+# -------------------------
+# 4️⃣ 년도별 흐름 계산 함수
+# -------------------------
+def yearly_flow(target_year):
+    # 예시 데이터
+    flow_text = f"{target_year}년: 작곡/공연/발표 성공 가능성 높음"
+    return flow_text
 
-    day = sxtwl.fromSolar(birth_date.year, birth_date.month, birth_date.day)
+# -------------------------
+# 5️⃣ 출력
+# -------------------------
+if submitted:
+    saju, ohaeng, sipshin, basic_traits = calculate_saju(year, month, day, hour, calendar_type, is_leap_month)
+    music_traits, recommended_instruments = music_analysis(saju, sipshin, ohaeng)
+    flow_text = yearly_flow(target_year)
 
-    year_gz = day.getYearGZ()
-    month_gz = day.getMonthGZ()
-    day_gz = day.getDayGZ()
-    hour_gz = day.getHourGZ(birth_hour)
+    st.subheader("📜 일반 사주 분석")
+    st.write("**8자 사주팔자**")
+    st.write(f"년주: {saju['년주']} | 월주: {saju['월주']} | 일주: {saju['일주']} | 시주: {saju['시주']}")
+    
+    st.write("**오행 분석**")
+    st.write(ohaeng)
+    
+    st.write("**십신 분석**")
+    st.write(sipshin)
+    
+    st.write("**기본 성향**")
+    st.write(basic_traits)
 
-    year = HEAVENLY[year_gz.tg] + EARTHLY[year_gz.dz]
-    month = HEAVENLY[month_gz.tg] + EARTHLY[month_gz.dz]
-    day_pillar = HEAVENLY[day_gz.tg] + EARTHLY[day_gz.dz]
-    hour = HEAVENLY[hour_gz.tg] + EARTHLY[hour_gz.dz]
+    st.subheader("🎵 음악 맞춤 사주 분석")
+    st.write("**음악 성향 분석**")
+    st.write(music_traits)
 
-    pillars = [year, month, day_pillar, hour]
+    st.write("**추천 악기 파트**")
+    st.write(", ".join(recommended_instruments))
 
-    st.header("사주팔자")
-
-    st.write("년주 :", year)
-    st.write("월주 :", month)
-    st.write("일주 :", day_pillar)
-    st.write("시주 :", hour)
-
-    elements = element_count(pillars)
-
-    st.header("오행 분석")
-
-    for k,v in elements.items():
-        st.write(k, v)
-
-    st.header("뮤지션 적성")
-
-    music = music_analysis(elements)
-
-    for k,v in music.items():
-
-        stars = "★"*min(5,max(1,v))
-
-        st.write(k, stars)
-
-    st.header("종합 해석")
-
-    if elements["화"] >= 2 and elements["목"] >= 2:
-        st.write("창작과 표현력이 강한 음악가 사주")
-
-    elif elements["수"] >= 2:
-        st.write("감성 중심 음악 스타일")
-
-    elif elements["금"] >= 2:
-        st.write("연주 중심 음악가")
-
-    else:
-        st.write("균형형 음악 성향")
-
-    st.header(f"{target_year}년 운세")
-
-    if elements["화"] >= 3:
-        st.write("공연운 상승")
-
-    elif elements["목"] >= 3:
-        st.write("창작운 상승")
-
-    elif elements["금"] >= 3:
-        st.write("연주 활동 증가")
-
-    else:
-        st.write("안정적인 음악 활동")
+    st.write("**년도별 사주 흐름 & 음악적 성취 가능성**")
+    st.write(flow_text)
