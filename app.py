@@ -12,20 +12,19 @@ st.markdown("""
     .main-title { text-align: center; color: #1A202C; padding: 20px 0; border-bottom: 2px solid #E2E8F0; }
     .section-card { background-color: #ffffff; padding: 25px; border-radius: 18px; border-left: 6px solid #4A5568; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .music-card { background-color: #FDF2F8; padding: 25px; border-radius: 18px; border-left: 6px solid #D53F8C; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(213,63,140,0.1); }
-    .target-year-card { background-color: #F0F9FF; padding: 25px; border-radius: 18px; border-left: 6px solid #3182CE; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(49,130,206,0.1); }
+    .position-card { background-color: #FFFBEB; padding: 25px; border-radius: 18px; border-left: 6px solid #D97706; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(217,119,6,0.1); }
     .saju-grid { display: flex; justify-content: space-around; margin-bottom: 20px; gap: 5px; }
     .saju-box { flex: 1; text-align: center; padding: 15px 5px; background: #EDF2F7; border-radius: 12px; font-weight: bold; border: 1px solid #CBD5E0; }
     .ohaeng-grid { display: flex; justify-content: space-between; background: #F8FAFC; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
     .ohaeng-item { text-align: center; flex: 1; }
     h2 { font-size: 1.3rem !important; color: #2D3748; margin-bottom: 15px; display: flex; align-items: center; }
     .content-text { line-height: 1.9; font-size: 1.05rem; color: #4A5568; text-align: justify; word-break: keep-all; }
-    .highlight { color: #D53F8C; font-weight: bold; }
+    .pos-title { font-size: 1.2rem; font-weight: bold; color: #B45309; margin-bottom: 10px; display: block; }
     </style>
     """, unsafe_allow_html=True)
 
 st.markdown("<div class='main-title'><h1>🎸 음악인을 위한 사주통변</h1></div>", unsafe_allow_html=True)
 
-# 시간 매핑
 hour_time_map = {
     "시간 선택": None, "23~01 자시": 0, "01~03 축시": 2, "03~05 인시": 4, "05~07 묘시": 6,
     "07~09 진시": 8, "09~11 사시": 10, "11~13 오시": 12, "13~15 미시": 14,
@@ -43,23 +42,34 @@ with st.expander("📝 사주 정보 및 분석 연도 입력", expanded=True):
     
     cal_type = st.radio("달력", ["양력", "음력"], horizontal=True)
     is_leap = st.checkbox("윤달 여부") if cal_type == "음력" else False
-    
-    # 보고 싶은 연도 입력 복원
     target_year = st.number_input("분석하고 싶은 연도 선택", 1900, 2100, value=2026)
-    
-    submitted = st.button("🎭 심층 이원 분석 리포트 생성", use_container_width=True)
+    submitted = st.button("🎭 심층 분석 리포트 생성", use_container_width=True)
 
-# 3️⃣ 심층 통변 엔진 (분량 및 연도별 분석 강화)
-def get_reports(day_gan, max_elem, counts, t_year, t_gz):
-    # 1. 전체 사주 통변
-    gen_total = f"본인은 <b>{day_gan}</b> 일간의 기운을 바탕으로, 하늘의 에너지가 지상으로 투영되는 독특한 예술적 명조를 지녔습니다. 전체적인 사주의 흐름이 창의적인 자기표현에 집중되어 있어, 일반적인 조직 생활보다는 본인만의 전문 영역에서 빛을 발하는 스타일입니다. 특히 대인관계에서 본인만의 확고한 주관을 가지고 있으면서도 타인에게 영감을 주는 능력이 탁월하여, 시간이 흐를수록 주변의 신뢰와 명성을 동시에 얻을 수 있는 복된 기운을 지니고 있습니다."
-    mus_total = f"명식 내에 <b>{max_elem}</b>의 에너지가 {counts[max_elem]}자로 가장 강하게 작용하고 있습니다. 이는 음악적으로 매우 강렬한 흡입력을 의미하며, 특히 사운드의 질감을 정교하게 다루거나 무대 위에서 대중을 압도하는 카리스마로 표출됩니다. 단순히 연주 기술에 머무는 것이 아니라, 감정의 깊은 곳을 건드리는 선율을 만들어내는 데 천부적인 소질이 있습니다. {max_elem} 기운의 특성을 살려 본인만의 장르를 개척한다면 대체 불가능한 아티스트로 자리매김할 것입니다."
-    
-    # 2. 선택 연도 운세 (일반/음악 이원화)
-    gen_year = f"{t_year}년({t_gz}년)은 본인의 일간인 {day_gan}과 새로운 운의 흐름이 교차하며 삶의 활력이 더해지는 시기입니다. 그동안 정체되었던 문제들이 주변 조력자의 도움으로 해결의 실마리를 찾게 되며, 사회적으로 자신의 입지를 공고히 다질 수 있는 중요한 기회가 찾아옵니다. 무리한 확장보다는 내실을 기하며 다가오는 변화를 차분히 준비한다면, 연말에는 기대 이상의 성취감과 안정을 동시에 누릴 수 있는 아주 긍정적인 한 해가 될 것입니다."
-    mus_year = f"음악가로서 {t_year}년은 창작의 영감이 최고조에 달하는 <span class='highlight'>'개화(開花)'</span>의 해입니다. 본인이 가진 {max_elem}의 에너지가 세운의 기운과 조화를 이루어 대중에게 깊은 인상을 남길 수 있는 결과물을 발표하기에 최적의 시기입니다. 특히 새로운 악기나 기술적 시도가 큰 성과를 거둘 것이며, 공연이나 협업을 통해 아티스트로서의 명예운이 크게 상승합니다. 자신의 감각을 믿고 적극적으로 활동 영역을 넓혀보시길 권장합니다."
-    
-    return gen_total, mus_total, gen_year, mus_year
+# 3️⃣ 포지션 추천 로직 엔진
+def get_music_position(max_elem):
+    pos_data = {
+        '목': {
+            'title': "🎻 보컬 & 서정적 인스트루멘탈",
+            'desc': "목(木)의 기운은 생명력과 성장을 상징하며, 사람의 목소리와 가장 닮아 있습니다. 풍부한 감수성을 바탕으로 대중의 마음을 어루만지는 보컬이나, 어쿠스틱 기타, 현악기 파트에서 뛰어난 역량을 발휘합니다. 따뜻한 멜로디를 만드는 작곡 분야에서도 두각을 나타냅니다."
+        },
+        '화': {
+            'title': "🎤 프론트맨 & 퍼포머 (보컬/리드기타)",
+            'desc': "화(火)의 기운은 발산과 화려함을 의미합니다. 무대 위에서 시선을 집중시키는 카리스마 있는 보컬이나 화려한 속주를 선보이는 리드 기타리스트에 적합합니다. 청중의 에너지를 끌어올리는 퍼포먼스 기획이나 직관적인 작곡 스타일에 강점이 있습니다."
+        },
+        '토': {
+            'title': "🎧 프로듀서 & 사운드 엔지니어 (작곡/편곡)",
+            'desc': "토(土)의 기운은 조율과 중재, 그리고 중심을 지키는 힘입니다. 여러 악기의 소리를 하나로 묶어주는 프로듀싱이나 편곡, 전체적인 사운드 밸런스를 잡는 엔지니어링에 탁월합니다. 묵직하게 팀의 중심을 잡아주는 베이스 파트와도 궁합이 좋습니다."
+        },
+        '금': {
+            'title': "🎸 테크니션 (일렉기타/드럼)",
+            'desc': "금(金)의 기운은 결단력과 정교함을 상징합니다. 정확한 타격감이 필요한 드럼이나 금속성 사운드가 매력적인 일렉 기타 테크니션으로서 독보적인 존재감을 보입니다. 한 치의 오차도 없는 미디(MIDI) 프로그래밍이나 날카로운 비판적 시각을 가진 작사 분야에서도 능력을 발휘합니다."
+        },
+        '수': {
+            'title': "🎹 키보드 & 예술적 작곡가",
+            'desc': "수(水)의 기운은 유연함과 깊은 사유를 의미합니다. 변화무쌍한 선율을 그려내는 키보드(신디사이저)나 철학적이고 깊이 있는 가사를 쓰는 작사가에 어울립니다. 장르를 넘나드는 유연한 작곡 능력과 전체적인 음악적 흐름을 설계하는 기획자로서의 자질이 충분합니다."
+        }
+    }
+    return pos_data.get(max_elem, {"title": "All-Rounder", "desc": "다양한 오행이 조화를 이루어 모든 포지션에서 활약이 가능합니다."})
 
 # 4️⃣ 분석 및 결과 출력
 if submitted:
@@ -68,38 +78,34 @@ if submitted:
     else:
         h = hour_time_map[hour_str]
         lunar = Solar.fromYmdHms(int(year), int(month), int(day), h, 0, 0).getLunar() if cal_type == "양력" else Lunar.fromYmdHms(int(year), (int(month) * -1) if is_leap else int(month), int(day), h, 0, 0)
-
         ba_zi = [lunar.getYearInGanZhi(), lunar.getMonthInGanZhi(), lunar.getDayInGanZhi(), lunar.getTimeInGanZhi()]
-        day_gan = lunar.getDayGan()
         
         ohaeng_map = {'목': '甲乙寅卯', '화': '丙丁巳午', '토': '戊己辰戌丑未', '금': '庚辛申酉', '수': '壬癸亥子'}
         counts = {k: sum(1 for c in "".join(ba_zi) if c in v) for k, v in ohaeng_map.items()}
         max_elem = max(counts, key=counts.get)
         
-        # 타겟 연도 간지 계산
-        t_lunar = Solar.fromYmd(target_year, 1, 1).getLunar()
-        target_gz = t_lunar.getYearInGanZhi()
-        
-        g_total, m_total, g_year, m_year = get_reports(day_gan, max_elem, counts, target_year, target_gz)
+        pos_info = get_music_position(max_elem)
 
-        st.markdown(f"### 🍀 {name if name else '아티스트'}님의 사주 분석 및 {target_year}년 운세")
+        st.markdown(f"### 🍀 {name if name else '아티스트'}님의 사주 분석 결과")
         
-        # 1. 사주 명식 및 오행 분포 (이미지 스타일 준수)
-        st.markdown(f"""
-            <div class='saju-grid'>
-                <div class='saju-box'><small>년주</small><br>{ba_zi[0]}</div>
-                <div class='saju-box'><small>월주</small><br>{ba_zi[1]}</div>
-                <div class='saju-box'><small>일주</small><br>{ba_zi[2]}</div>
-                <div class='saju-box'><small>시주</small><br>{ba_zi[3]}</div>
-            </div>
-        """, unsafe_allow_html=True)
+        # 명식 및 오행 시각화 (이미지 스타일 유지)
+        st.markdown(f"""<div class='saju-grid'>
+            <div class='saju-box'><small>년주</small><br>{ba_zi[0]}</div>
+            <div class='saju-box'><small>월주</small><br>{ba_zi[1]}</div>
+            <div class='saju-box'><small>일주</small><br>{ba_zi[2]}</div>
+            <div class='saju-box'><small>시주</small><br>{ba_zi[3]}</div>
+        </div>""", unsafe_allow_html=True)
         st.markdown("<div class='ohaeng-grid'>" + "".join([f"<div class='ohaeng-item'><small>{k}</small><br><b>{v}자</b></div>" for k,v in counts.items()]) + "</div>", unsafe_allow_html=True)
 
-        # 2. 전체 사주 리포트
-        st.markdown(f"<div class='section-card'><h2>👤 타고난 천성 및 일반 통변</h2><div class='content-text'>{g_total}</div></div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='music-card'><h2>🎸 타고난 음악적 사주 통변</h2><div class='content-text'>{m_total}</div></div>", unsafe_allow_html=True)
-        
-        # 3. 선택 연도 이원화 리포트 (추가된 부분)
-        st.markdown(f"### 📅 {target_year}년({target_gz}) 심층 분석")
-        st.markdown(f"<div class='target-year-card'><h2>🏙️ {target_year}년 일반 운세 흐름</h2><div class='content-text'>{g_year}</div></div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='music-card' style='background-color:#FFF5F7;'><h2>🎹 {target_year}년 음악적 활동 전망</h2><div class='content-text'>{m_year}</div></div>", unsafe_allow_html=True)
+        # 🌟 포지션 추천 섹션 (새로 추가된 란)
+        st.markdown(f"""
+            <div class='position-card'>
+                <h2>✨ 추천 음악 포지션</h2>
+                <span class='pos-title'>{pos_info['title']}</span>
+                <div class='content-text'>{pos_info['desc']}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # 기존 리포트 섹션
+        st.markdown(f"<div class='section-card'><h2>👤 일반 인생 통변</h2><div class='content-text'>타고난 예술적 영감이 풍부한 명조입니다. 본인만의 독창적인 색채를 믿고 나아가십시오.</div></div>", unsafe_allow_html=True)
+        st.markdown(f"<div class='music-card'><h2>🎸 음악적 사주 통변</h2><div class='content-text'>{max_elem}의 기운이 강하여 해당 속성의 악기나 작업 방식에서 가장 큰 창의성이 발현됩니다.</div></div>", unsafe_allow_html=True)
