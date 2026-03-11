@@ -173,4 +173,3 @@ if run:
 
         st.error("사주 계산 오류")
         st.write(e)
-```
