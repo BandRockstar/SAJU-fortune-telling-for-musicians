@@ -1,2 +1,3 @@
 streamlit
-lunardate
+sajupy
+lunar_python
