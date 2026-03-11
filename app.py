@@ -20,7 +20,6 @@ st.markdown("""
     .position-card { background-color: #FFFBEB; border-left: 8px solid #D97706; }
     .target-year-card { background-color: #F0F9FF; border-left: 8px solid #3182CE; }
     
-    /* 삼재 상태별 박스 스타일 */
     .samjae-active { background-color: #FEF2F2; border: 2px solid #EF4444; color: #991B1B; padding: 1.5rem; border-radius: 1.2rem; margin-bottom: 1.5rem; }
     .samjae-inactive { background-color: #F0FDF4; border: 2px solid #22C55E; color: #166534; padding: 1.5rem; border-radius: 1.2rem; margin-bottom: 1.5rem; }
 
@@ -63,7 +62,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
 def get_samjae_status(year_ganzhi, target_year):
     zodiac = year_ganzhi[-1]
     samjae_map = {
-        '申子辰': ['寅', '卯', '辰'], '亥卯未': ['巳', '午', '未'],
+        '申子辰': ['寅', '卯', '辰'], '亥卯未': ['巳', '午', '미'],
         '寅午戌': ['申', '酉', '戌'], '巳酉丑': ['亥', '子', '丑']
     }
     my_group = next((v for k, v in samjae_map.items() if zodiac in k), [])
@@ -112,7 +111,6 @@ if submitted:
         gen_text, mus_text = get_ultra_report(d_gan, max_elem, display_name)
         samjae_msg, samjae_class = get_samjae_status(ba_zi[0], target_y)
 
-        # 리포트 출력
         st.markdown(f"### 🍀 {display_name}님의 심층 리포트")
         st.markdown("<div class='saju-grid'>" + "".join([f"<div class='saju-box'><small>{l}</small><br>{v}</div>" for l, v in zip(['년주','월주','일주','시주'], ba_zi)]) + "</div>", unsafe_allow_html=True)
         st.markdown("<div class='ohaeng-grid'>" + "".join([f"<div class='ohaeng-item'><small>{k}</small><br><b>{v}자</b></div>" for k,v in counts.items()]) + "</div>", unsafe_allow_html=True)
@@ -122,21 +120,33 @@ if submitted:
         st.markdown(f"<div class='section-card'><h2>👤 타고난 성정과 일반 통변</h2><div class='content-text'>{gen_text}</div></div>", unsafe_allow_html=True)
         st.markdown(f"<div class='music-card'><h2>🎸 타고난 음악적 사주 통변</h2><div class='content-text'>{mus_text}</div></div>", unsafe_allow_html=True)
 
-        # ✨ [추가된 섹션] 추천 음악 포지션 및 전문 재능
+        # -------------------------------------------------------------------
+        # ✨ [초장문 업데이트] 추천 음악 포지션 및 전문 재능 섹션
+        # -------------------------------------------------------------------
         st.markdown(f"""
         <div class='position-card'>
             <h2>✨ 추천 음악 포지션 및 전문 재능</h2>
             <div class='content-text'>
                 <span class='pos-title'>🎤 리드 보컬 및 기타리스트 (Frontman)</span>
-                화(火)의 화려한 표출력과 금(金)의 정교한 결단력이 만나, 무대 위에서 대중을 압도하는 에너지를 발산합니다. 
-                특히 보컬의 호소력과 기타의 기술적 정교함을 동시에 갖춘 <b>프런트맨</b>으로서의 역량이 매우 강합니다.
+                귀하의 명식에서 가장 빛나는 음악적 포지션은 화(火)의 폭발적인 에너지와 금(金)의 날카로운 정밀함이 교차하는 지점인 '리드 보컬 겸 리드 기타리스트'입니다. 
+                화 기운은 태양처럼 자신을 만천하에 드러내고자 하는 강렬한 표출력을 상징하며, 이는 무대 위에서 청중의 시선을 단숨에 사로잡는 보컬의 성량과 무대 장악력으로 치환됩니다. 
+                단순히 노래를 전달하는 것에 그치지 않고, 곡의 감정적 고조를 본인의 직관적인 에너지를 통해 극적으로 끌어올리는 천부적인 프런트맨의 자질을 갖추고 있습니다. 
+                여기에 금 기운의 정교한 결단력이 더해져, 감정에만 휩쓸리지 않고 기술적으로 완벽하게 제어된 기타 연주를 동시에 수행할 수 있는 능력을 보여줍니다. 
+                이러한 이원적 재능의 결합은 밴드의 음악적 중심을 잡는 동시에 대중적 흡인력을 극대화하는 독보적인 존재감을 형성하며, 무대의 가장 밝은 곳에서 비로소 아티스트로서의 완전한 자아를 실현하게 만들 것입니다.
                 <br><br>
                 <span class='pos-title'>🎚️ 사운드 메이킹 및 엔지니어링</span>
-                사주 내의 강한 금(金) 기운은 소리를 깎고 다듬는 섬세한 감각을 부여합니다. 
-                이는 단순 연주를 넘어 <b>믹싱, 마스터링, 이펙터 사운드 디자인</b> 등 기술적이고 정밀한 작업에서 남다른 두각을 나타내게 합니다.
+                사주 내에 두드러지는 금(金)의 기운은 소리를 단순히 감상하는 단계를 넘어, 소리의 질감을 미세하게 깎고 다듬어 최상의 결과물을 도출해내는 '사운드 조각가'로서의 재능을 부여합니다. 
+                이러한 금 기운의 완벽주의적 속성은 믹싱, 마스터링, 이펙터 사운드 디자인 등 고도의 집중력과 청각적 예민함을 요구하는 엔지니어링 작업에서 타의 추종을 불허하는 전문성으로 나타납니다. 
+                불필요한 노이즈를 걷어내고 악기 간의 주파수 간섭을 본능적으로 조율하며, 곡의 의도에 가장 부합하는 명징하고 세련된 톤을 찾아내는 데 탁월한 두각을 나타냅니다. 
+                단순히 연주를 기록하는 차원을 넘어 소리의 공간감과 질감을 설계하는 프로듀싱 감각은 본인의 창작물을 상업적·예술적 완성도가 높은 하이엔드 퀄리티로 유지하게 만드는 핵심적인 원동력입니다. 
+                이러한 기술적 정밀함은 아티스트로서 본인이 추구하는 예술적 이상향을 현실적인 소리로 완벽하게 구현해내는 강력한 무기가 되어줄 것입니다.
                 <br><br>
                 <span class='pos-title'>🎯 음악적 성향: 완벽주의적 표현</span>
-                자신만의 확고한 음악적 주관을 가지고 있으며, 사운드의 작은 디테일 하나까지 놓치지 않으려는 <b>완벽주의적 성향</b>이 창작 활동의 핵심 원동력이 됩니다.
+                예술적 자아에 있어서 귀하는 타협을 거부하는 확고한 주관과 디테일한 부분까지 집요하게 파고드는 완벽주의적 성향을 지니고 있습니다. 
+                화(火)의 뜨거운 창조적 영감이 떠오르면, 금(金)의 차가운 이성이 이를 분석하고 정제하여 한 점의 오차도 없는 예술적 결과물로 만들어내야만 직성이 풀리는 기질입니다. 
+                연주에 있어서는 단 하나의 음표 처리나 소리의 잔향까지도 본인이 설계한 의도에 정확히 부합해야 하며, 이러한 철저함이 때로는 스스로를 고되게 할 수 있으나 결과적으로는 대중과 평단으로부터 높은 신뢰를 얻는 명반을 탄생시키는 근간이 됩니다. 
+                자신만의 독창적인 음악적 문법을 고수하려는 독립심은 유행에 휩쓸리지 않는 독보적인 음악 세계를 구축하게 하며, 시간이 흘러도 가치가 변하지 않는 견고한 사운드 정체성을 확립하게 할 것입니다. 
+                이러한 완벽주의는 본인이 추구하는 예술적 진실성을 담보하는 가장 중요한 가치이며, 이를 통해 누구도 흉내 낼 수 없는 본인만의 독창적인 예술적 지평을 넓혀가게 될 것입니다.
             </div>
         </div>
         """, unsafe_allow_html=True)
