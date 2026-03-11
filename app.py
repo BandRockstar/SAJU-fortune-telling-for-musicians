@@ -1,4 +1,4 @@
-# streamlit_music_saju_final.py
+# streamlit_music_saju_final_fixed.py
 
 import streamlit as st
 from lunar_python import Solar, Lunar
@@ -41,8 +41,10 @@ hour_map = {
 }
 
 def calculate_saju(year, month, day, hour, calendar_type, is_leap_month):
-    # 타입 강제 int 변환
+    # 확실하게 int 변환
     year, month, day = int(year), int(month), int(day)
+
+    # 음력 입력이면 양력 변환
     if calendar_type == "음력":
         lunar = Lunar.fromYmd(year, month, day, is_leap_month)
         solar = lunar.getSolar()
