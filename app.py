@@ -12,11 +12,11 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        year = st.number_input("출생년", 1900, 2026, value=2000)
+        year = st.number_input("출생년", 1900, 2026, value=1981)
     with col2:
-        month = st.number_input("출생월", 1, 12, value=1)
+        month = st.number_input("출생월", 1, 12, value=2)
     with col3:
-        day = st.number_input("출생일", 1, 31, value=1)
+        day = st.number_input("출생일", 1, 31, value=7)
 
     time_options = [
         "모름",
@@ -25,7 +25,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
         "11:30~13:30 오시 (午)", "13:30~15:30 미시 (未)", "15:30~17:30 신시 (申)",
         "17:30~19:30 유시 (酉)", "19:30~21:30 술시 (戌)", "21:30~23:30 해시 (亥)"
     ]
-    birth_time = st.selectbox("출생 시간", time_options, index=0)
+    birth_time = st.selectbox("출생 시간", time_options, index=4) # 묘시 기본값
     
     calendar_type = st.radio("달력 선택", ["양력", "음력"], horizontal=True)
     
@@ -51,7 +51,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=T
         eight_char = lunar_obj.getEightChar()
         
         gan_ko = {"甲":"갑", "乙":"을", "丙":"병", "丁":"정", "戊":"무", "己":"기", "庚":"경", "辛":"신", "壬":"임", "癸":"계"}
-        zi_ko = {"子":"자", "축":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "未":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
+        zi_ko = {"子":"자", "丑":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "未":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
 
         def format_ganzi(ganzi_str):
             if not ganzi_str or len(ganzi_str) < 2: return "?", "?"
@@ -94,11 +94,16 @@ if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=T
 
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
 
-        # 3층: 삼재 분석 (원본 로직 보존)
+        # 3층: 삼재 분석 (문자열 닫기 오류 해결)
         st.divider()
         my_year_zi = precise_eight_char.getYear()[1]
         samjae_groups = {
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
             "巳": ["亥", "子", "丑"], "酉": ["亥", "子", "丑"], "丑": ["亥", "子", "丑"],
-            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未
+            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
+        }
+        my_samjae_zis = samjae_groups.get(my_year_zi, [])
+        target_solar = Solar.fromYmd(target_year, 1, 1)
+        target_year_zi = target_solar.getLunar().getEightChar().getYear()[1]
+        desc_text = "\n\n삼재는 9년마다 돌아오는 3년의 조심
