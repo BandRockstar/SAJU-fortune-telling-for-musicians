@@ -77,7 +77,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             
             t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
 
-        # 2층: 사주 원국 출력 (고정)
+        # 2층: 사주 원국 출력
         st.divider()
         st.subheader(f"📊 {name}님의 사주 원국 (8글자)")
 
@@ -96,9 +96,8 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             st.info(f"{t_gan}\n\n{t_zi}")
 
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
-        st.write(f"**분석 연도:** {target_year}년")
 
-        # 3층: 삼재 분석 (고정 및 아이콘 오타 수정)
+        # 3층: 삼재 분석
         st.divider()
         my_year_zi = eight_char.getYear()[1]
         samjae_groups = {
@@ -118,10 +117,9 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             current_status = samjae_types[samjae_idx]
             st.error(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간({current_status})에 해당합니다.**{desc_text}")
         else:
-            # [수정] 삼재가 아닐 때의 아이콘을 ✅로 변경
             st.success(f"✅ **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**{desc_text}")
 
-        # --- [4층: 정통 명리 심층 통변] ---
+        # 4층: 정통 명리 심층 통변
         st.divider()
         st.subheader(f"📜 {name}님 사주 원국 정밀 분석 리포트")
 
@@ -149,11 +147,18 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         max_ele = max(counts, key=counts.get)
         part1 = f"{name}님의 사주 구성을 분석한 결과, 현재 {max_ele}의 기운이 {counts[max_ele]}개로 가장 강성한 세력을 형성하고 있습니다. "
         if counts[max_ele] >= 3:
-            part1 += f"명리학적으로 특정 오행이 태과(太過)한 명조는 기질이 선명하고 주관이 뚜렷하여 자기 세계가 확고함을 의미합니다. 외부의 환경 변화에 휩쓸리기보다 자신의 신념과 원칙을 관철해 나가는 강인한 성정을 지녔습니다. "
+            part1 += "명리학적으로 특정 오행이 태과(太過)한 명조는 기질이 선명하고 주관이 뚜렷하여 자기 세계가 확고함을 의미합니다. "
         else:
-            part1 += "오행의 분포가 전반적으로 중화(中和)를 이루고 있어 성품이 원만하고 매사에 균형 감각이 뛰어납니다. 편중되지 않은 시각으로 사물을 바라보며 주변 환경과 조화롭게 융화되는 유연한 기질을 갖추고 있습니다. "
+            part1 += "오행의 분포가 전반적으로 중화(中和)를 이루고 있어 성품이 원만하고 매사에 균형 감각이 뛰어납니다. "
 
         part2 = f"본신인 일간 {my_day_gan}은 {my_element}의 성질을 지니고 있습니다. "
-        if my_element == "木": part2 += "오상 중 인(仁)을 상징하며, 나무가 위로 뻗어 나가는 성질처럼 창의적인 기획력과 어질고 진취적인 마음을 품고 있습니다. "
-        elif my_element == "火": part2 += "오상 중 예(禮)를 상징하며, 불꽃이 주변을 밝히듯 열정적이고 자신을 드러내어 소통하려는 표현력이 강력한 기질입니다. "
-        elif my_element == "土": part2 += "오상 중 신(信)을 상징하며, 대지가 만물을 품듯 묵직하고 신의가 두터우며 매
+        if my_element == "木": part2 += "오상 중 인(仁)을 상징하며, 창의적인 기획력과 어질고 진취적인 마음을 품고 있습니다. "
+        elif my_element == "火": part2 += "오상 중 예(禮)를 상징하며, 열정적이고 소통하려는 표현력이 강력한 기질입니다. "
+        elif my_element == "土": part2 += "오상 중 신(信)을 상징하며, 신의가 두터우며 중용의 덕이 있습니다. "
+        elif my_element == "金": part2 += "오상 중 의(義)를 상징하며, 결단력 있고 완벽을 기하는 냉철한 성정입니다. "
+        else: part2 += "오상 중 지(智)를 상징하며, 유연하고 지혜로운 내면의 통찰이 뛰어납니다. "
+
+        st.info(part1 + "\n\n" + part2)
+
+    else:
+        st.warning("성함을 입력해 주세요.")
