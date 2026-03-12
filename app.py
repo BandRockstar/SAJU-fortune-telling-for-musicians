@@ -6,7 +6,7 @@ st.set_page_config(page_title="정통 사주 명리 분석", page_icon="☯️",
 
 st.title("☯️ 정통 사주 명리 분석")
 
-# 2. 사주 정보 입력 섹션 (원본 유지)
+# 2. 사주 정보 입력 섹션 (원본 로직 고정)
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     name = st.text_input("성함", value="")
     
@@ -39,7 +39,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
 # 3. 분석 버튼 및 결과 출력
 if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=True):
     if name:
-        # [원본 로직] 날짜 객체 생성
+        # [원본 로직] 날짜 변환
         if calendar_type == "양력":
             date_obj = Solar.fromYmd(year, month, day)
             lunar_obj = date_obj.getLunar()
@@ -58,7 +58,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=T
             gan, zi = ganzi_str[0], ganzi_str[1]
             return f"{gan}({gan_ko.get(gan, '')})", f"{zi}({zi_ko.get(zi, '')})"
 
-        # [원본 로직] 정밀 사주 도출
+        # [원본 로직] 8글자 정밀 추출
         if birth_time == "모름":
             t_gan, t_zi = "?", "?"
             precise_eight_char = eight_char
@@ -84,56 +84,30 @@ if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=T
         st.divider()
         st.subheader(f"📊 {name}님의 사주 원국")
 
-        # 시주, 일주를 윗줄에 배치
-        row1_col1, row1_col2 = st.columns(2)
-        with row1_col1:
-            st.info(f"### 시주\n{t_gan}\n\n{t_zi}")
-        with row1_col2:
-            st.info(f"### 일주\n{d_gan}\n\n{d_zi}")
-            
-        # 월주, 년주를 아랫줄에 배치
-        row2_col1, row2_col2 = st.columns(2)
-        with row2_col1:
-            st.info(f"### 월주\n{m_gan}\n\n{m_zi}")
-        with row2_col2:
-            st.info(f"### 년주\n{y_gan}\n\n{y_zi}")
+        c_row1_1, c_row1_2 = st.columns(2)
+        with c_row1_1: st.info(f"### 시주\n{t_gan}\n\n{t_zi}")
+        with c_row1_2: st.info(f"### 일주\n{d_gan}\n\n{d_zi}")
+        
+        c_row2_1, c_row2_2 = st.columns(2)
+        with c_row2_1: st.info(f"### 월주\n{m_gan}\n\n{m_zi}")
+        with c_row2_2: st.info(f"### 년주\n{y_gan}\n\n{y_zi}")
 
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
-        st.write(f"**분석 연도:** {target_year}년")
 
-        # 3층: 삼재 분석 (원본 로직 유지)
+        # 3층: 삼재 분석 (원본 로직 보존)
         st.divider()
         my_year_zi = precise_eight_char.getYear()[1]
         samjae_groups = {
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
             "巳": ["亥", "子", "丑"], "酉": ["亥", "子", "丑"], "丑": ["亥", "子", "丑"],
-            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
+            "亥": ["巳", "오", "未"], "卯": ["巳", "오", "未"], "未": ["巳", "오", "未"]
         }
         my_samjae_zis = samjae_groups.get(my_year_zi, [])
         target_solar = Solar.fromYmd(target_year, 1, 1)
         target_year_zi = target_solar.getLunar().getEightChar().getYear()[1]
-        desc_text = "\n\n삼재는 9년마다 돌아오는 3년의 조심하는 시기를 뜻합니다."
-
-        if target_year_zi in my_samjae_zis:
-            samjae_idx = my_samjae_zis.index(target_year_zi)
-            samjae_types = ["들삼재", "눌삼재", "날삼재"]
-            current_status = samjae_types[samjae_idx]
-            st.error(f"🚫 **삼재 정보: {target_year}년은 {current_status}입니다.**{desc_text}")
-        else:
-            st.success(f"✅ **삼재 정보: {target_year}년은 삼재가 아닙니다.**{desc_text}")
-
-        # 4층: 정통 명리 심층 통변 (원본 로직 유지)
-        st.divider()
-        st.subheader(f"📜 정밀 분석 리포트")
-
-        gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
-        zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
-        all_chars = [y_gan[0], y_zi[0], m_gan[0], m_zi[0], d_gan[0], d_zi[0], t_gan[0], t_zi[0]]
         
-        counts = {"木": 0, "火": 0, "土": 0, "金": 0, "水": 0}
-        for c in all_chars:
-            if c in gan_elements: counts[gan_elements[c]] += 1
-            elif c in zi_elements: counts[zi_elements[c]] += 1
-
-        my_day_gan =
+        if target_year_zi in my_samjae_zis:
+            st.error(f"🚫 **삼재 정보: {target_year}년은 삼재 기간입니다.**")
+        else:
+            st.success(f"✅ **삼재 정보: {target_year}년은 삼재
