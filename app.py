@@ -1,218 +1,114 @@
 import streamlit as st
-from lunar_python import Solar
+from lunar_python import Solar, Lunar
 
-# 페이지 설정
+# 1️⃣ 페이지 설정 및 UI 디자인
 st.set_page_config(page_title="음악인을 위한 사주통변 Ver 1.0", layout="centered")
 
 st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
-* { font-family: 'Noto Sans KR', sans-serif; }
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
+    * { font-family: 'Noto Sans KR', sans-serif; }
+    .main-title { text-align: center; color: #1A202C; padding: 25px 0; border-bottom: 3px solid #E2E8F0; margin-bottom: 30px; }
+    .section-card, .music-card, .target-year-card { 
+        padding: 2.2rem; border-radius: 1.5rem; margin-bottom: 2rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+    }
+    .section-card { background-color: #ffffff; border-left: 10px solid #4A5568; }
+    .music-card { background-color: #FDF2F8; border-left: 10px solid #D53F8C; }
+    .target-year-card { background-color: #F0F9FF; border-left: 10px solid #3182CE; }
+    .content-text { line-height: 2.4; font-size: 1.1rem; color: #2D3748; text-align: justify; word-break: keep-all; }
+    .saju-grid { display: flex; justify-content: space-around; margin-bottom: 2.5rem; gap: 12px; }
+    .saju-box { flex: 1; text-align: center; padding: 20px 5px; background: #F7FAFC; border-radius: 18px; font-weight: bold; border: 2px solid #E2E8F0; }
+    </style>
+    """, unsafe_allow_html=True)
 
-.main-title { text-align: center; color: #1A202C; padding: 25px 0; border-bottom: 3px solid #E2E8F0; margin-bottom: 30px; }
-
-.section-card, .music-card, .target-year-card {
-padding: 2.2rem; border-radius: 1.5rem; margin-bottom: 2rem;
-box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-}
-
-.section-card { background-color: #ffffff; border-left: 10px solid #4A5568; }
-.music-card { background-color: #FDF2F8; border-left: 10px solid #D53F8C; }
-.target-year-card { background-color: #F0F9FF; border-left: 10px solid #3182CE; }
-
-.content-text { line-height: 2.2; font-size: 1.1rem; color: #2D3748; }
-
-.saju-grid { display: flex; justify-content: space-around; margin-bottom: 2.5rem; gap: 12px; }
-
-.saju-box {
-flex: 1; text-align: center; padding: 20px 5px;
-background: #F7FAFC; border-radius: 18px;
-font-weight: bold; border: 2px solid #E2E8F0;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# -----------------------------
-# 천간지지 계산
-# -----------------------------
-
+# 2️⃣ 천간지지 및 십신 계산 로직 (보내주신 수식 적용)
 def get_year_stem_branch(year):
-
     stems = ["갑","을","병","정","무","기","경","신","임","계"]
     branches = ["자","축","인","묘","진","사","오","미","신","유","술","해"]
-
     stem = stems[(year - 4) % 10]
     branch = branches[(year - 4) % 12]
-
     return stem, branch
 
-
-# -----------------------------
-# 병화 기준 십신
-# -----------------------------
-
 def get_ten_god_for_bing(stem):
-
     mapping = {
-        "갑":"편인",
-        "을":"정인",
-        "병":"비견",
-        "정":"겁재",
-        "무":"식신",
-        "기":"상관",
-        "경":"편재",
-        "신":"정재",
-        "임":"편관",
-        "계":"정관"
+        "갑":"편인", "을":"정인", "병":"비견", "정":"겁재", "무":"식신",
+        "기":"상관", "경":"편재", "신":"정재", "임":"편관", "계":"정관"
     }
-
     return mapping.get(stem)
 
-
-# -----------------------------
-# 운세 리포트
-# -----------------------------
-
+# 3️⃣ 300자 이상 고밀도 통변 데이터베이스
 def get_comprehensive_report(name, target_y):
-
     stem, branch = get_year_stem_branch(target_y)
-
     ten_god = get_ten_god_for_bing(stem)
-
-    current_god = f"{stem}{branch}년 ({ten_god})"
+    current_god_label = f"{stem}{branch}년 ({ten_god})"
 
     general_db = {
-
-    "편재": f"{target_y}년은 활동 반경이 크게 넓어지고 예상치 못한 재물 기회가 찾아오는 해입니다. 사회적으로 본인의 능력이 높게 평가받으며 새로운 사업이나 프로젝트가 확장되는 흐름이 나타납니다. 다만 재물의 흐름이 커지는 만큼 지출 관리도 중요합니다.",
-
-    "정재": f"{target_y}년은 안정적인 수입과 꾸준한 성과가 나타나는 해입니다. 성실함이 결실을 맺으며 장기적으로 기반을 다지기에 좋은 시기입니다. 무리한 확장보다는 현재 기반을 강화하는 전략이 좋습니다.",
-
-    "편관": f"{target_y}년은 책임과 도전이 동시에 찾아오는 해입니다. 어려운 과업을 맡을 가능성이 있으며 이를 통해 사회적 위치가 상승할 수 있습니다. 스트레스 관리가 중요합니다.",
-
-    "정관": f"{target_y}년은 명예와 안정의 흐름이 강한 해입니다. 사회적 평판이 좋아지고 공적인 자리에서 인정받는 일이 많아질 수 있습니다.",
-
-    "편인": f"{target_y}년은 내면의 통찰과 창의적인 사고가 강해지는 해입니다. 독창적인 아이디어가 떠오르기 쉬우며 학문이나 연구, 예술적 탐구에 유리한 시기입니다.",
-
-    "정인": f"{target_y}년은 도움과 후원이 따르는 해입니다. 주변의 지지와 협력 속에서 안정적인 발전이 이루어질 수 있습니다.",
-
-    "비견": f"{target_y}년은 자립심과 주도성이 강해지는 해입니다. 스스로 길을 개척하려는 의지가 강해지며 새로운 프로젝트를 시작하기 좋습니다.",
-
-    "겁재": f"{target_y}년은 경쟁이 강해지는 해입니다. 주변의 자극을 통해 성장하는 시기이며 과감한 도전이 필요한 시기입니다.",
-
-    "식신": f"{target_y}년은 창작과 표현이 활발해지는 시기입니다. 아이디어가 실제 결과물로 이어지기 쉽습니다.",
-
-    "상관": f"{target_y}년은 기존 틀을 깨는 창의적 변화가 나타나는 해입니다. 예술적 재능이 돋보일 수 있습니다."
+        "편인": f"{target_y}년은 내면의 통찰력과 독창적인 직관이 극대화되는 '편인'의 해입니다. 본인만의 전문적인 기술이나 지식을 깊이 있게 파고들기에 최적의 시기이며, 남들이 보지 못하는 이면의 가치를 발견하는 능력이 탁월해집니다. 조금은 고독한 사색의 시간이 필요할 수 있으나, 이 과정에서 얻은 영감은 향후 본인의 독보적인 자산이 될 것입니다. 전통적인 방식보다는 본인만의 스타일로 문제를 해결할 때 큰 성취를 맛볼 수 있으며, 정신적인 성장과 더불어 예술적 깊이가 한층 더 정교해지는 한 해가 될 것입니다.",
+        "정인": f"{target_y}년은 안정적인 지원과 후원운이 따르는 '정인'의 해입니다. 주변의 신뢰를 바탕으로 문서적인 계약이나 자격 취득에서 유리한 고지를 점하게 되며, 윗사람이나 귀인의 도움으로 일이 순조롭게 풀리는 경험을 하게 됩니다. 마음의 평온을 찾고 내실을 기하기에 가장 좋은 시기이며, 본인이 가진 재능을 세상이 공식적으로 인정해주기 시작하는 흐름입니다. 성급한 추진보다는 순리에 맡길 때 우주의 기운이 본인을 돕게 되며, 삶의 질이 한 단계 업그레이드되는 편안한 결실을 얻게 될 것입니다.",
+        "비견": f"{target_y}년은 주체성과 독립심이 강하게 일어나는 '비견'의 해입니다. 외부의 간섭에서 벗어나 본인이 주도하는 새로운 프로젝트를 시작하기에 완벽한 타이밍이며, 동료들과 대등한 위치에서 협력하며 본인의 영역을 확장하게 됩니다. 본인에 대한 믿음이 확고해지는 시기인 만큼, 소신 있게 밀어붙이는 추진력이 성공의 핵심 열쇠가 될 것입니다. 자아실현에 대한 욕구가 강해지고 스스로의 힘으로 인생의 새로운 이정표를 세우게 되는 역동적이고 희망찬 한 해가 될 것임을 확신합니다.",
+        "겁재": f"{target_y}년은 강력한 돌파력과 경쟁심이 요구되는 '겁재'의 해입니다. 주변의 자극이나 경쟁 상황이 오히려 본인을 성장시키는 기폭제가 될 것이며, 난관을 극복하는 과정에서 본인의 존재감을 확실히 각인시키게 됩니다. 예상치 못한 변화가 찾아올 수 있으나 이를 기회로 전환하는 과감한 결단력이 빛을 발할 것입니다. 실리를 챙기는 꼼꼼함만 더해진다면, 하반기에는 경쟁자들을 압도하는 독보적인 성과를 거두게 될 것이며 인생의 새로운 변곡점을 만들어내는 강력한 에너지를 경험하게 될 것입니다.",
+        "식신": f"{target_y}년은 창의적인 즐거움과 표현의 확장이 일어나는 '식신'의 해입니다. 그동안 머릿속에만 있던 아이디어들을 구체적인 결과물로 구현해내기에 가장 적합한 시기입니다. 의식주가 풍족해지고 심리적인 여유가 생기며, 주변 사람들에게 본인의 재능을 아낌없이 베풀 때 더 큰 행운이 돌아오게 됩니다. 성실한 노력의 대가가 실질적인 이득으로 이어지는 황금기이며, 본인이 좋아하는 일을 하는 것만으로도 명성과 부가 자연스럽게 따라오는 선순환의 흐름을 타게 될 것입니다.",
+        "상관": f"{target_y}년은 기존의 틀을 깨는 혁신과 화려한 재능 표출이 돋보이는 '상관'의 해입니다. 대중의 이목을 집중시키는 독특한 매력이 최고조에 달하며, 본인만의 창의적인 언어와 예술적 감각이 세상에 널리 알려지게 됩니다. 조금은 파격적인 시도가 오히려 성공의 밑거름이 될 것이며, 막혔던 소통의 창구가 열리며 화려한 스포트라이트를 받게 될 것입니다. 본인의 개성을 가감 없이 드러낼 때 가장 큰 박수를 받게 되며, 변화를 두려워하지 않는 도전 정신이 인생의 새로운 전성기를 열어줄 것입니다.",
+        "편재": f"{target_y}년은 활동 범위가 크게 넓어지고 역동적인 재물운이 따르는 '편재'의 해입니다. 사회적으로 본인의 역량이 높게 평가받아 예상치 못한 비즈니스 기회나 큰 규모의 프로젝트를 맡게 될 가능성이 매우 높습니다. 과감하게 움직일수록 얻는 것이 많으며, 넓은 시야로 세상을 바라볼 때 커다란 기쁨을 맛보게 될 것입니다. 다만 지출과 수입의 흐름이 모두 커지는 시기이므로 전략적인 자산 관리가 병행된다면, 본인의 사회적 영향력과 경제적 가치를 동시에 극대화할 수 있는 성공적인 한 해가 될 것입니다.",
+        "정재": f"{target_y}년은 성실함이 확실한 결실로 이어지는 '정재'의 해입니다. 안정적인 수입과 신뢰를 바탕으로 한 계약운이 매우 좋으며, 본인이 흘린 땀방울만큼 정직한 보상이 돌아오는 시기입니다. 무리한 확장보다는 내실을 기하고 현재의 기반을 공고히 할 때 우주의 기운이 본인을 돕게 됩니다. 가정과 일의 균형이 조화롭게 유지되며, 장기적인 관점에서 본인의 경제적 토대를 완벽하게 구축하는 실속 있는 한 해가 될 것입니다. 꼼꼼한 관리 능력이 빛을 발하여 주변의 두터운 신망을 얻게 되는 흐름입니다.",
+        "편관": f"{target_y}년은 강력한 명예와 책임감이 뒤따르는 '편관'의 해입니다. 어려운 과업을 완수하며 본인의 권위를 세우게 되고, 조직이나 단체에서 핵심적인 리더 역할을 수행하게 됩니다. 스스로를 담금질하는 과정에서 정신적인 강인함이 생기며, 이를 극복했을 때 얻는 명예는 그 어느 때보다 빛나고 견고할 것입니다. 스트레스를 예술적 에너지로 승화시킨다면 커리어에서 가장 인상적인 장면을 만들어낼 수 있습니다. 본인의 한계를 시험하고 증명해내어 모두의 존경을 받는 인물로 거듭나는 시기입니다.",
+        "정관": f"{target_y}년은 사회적 인정과 명예로운 안정이 찾아오는 '정관'의 해입니다. 합리적인 판단과 규범적인 태도로 인해 주변의 깊은 신뢰를 얻게 되며, 공식적인 직함이나 명예가 상승하는 경사가 예상됩니다. 순리에 맞는 흐름이 본인을 돕는 해이므로, 원칙을 지키며 활동한다면 명예로운 결과를 얻게 될 것입니다. 대외적인 평판이 매우 좋아지는 시기이니 중요한 공적 업무나 대형 계약을 추진하기에 최적의 시기이며, 안정적인 환경 속에서 본인의 능력을 유감없이 발휘하여 삶의 질을 높이게 될 것입니다."
     }
-
 
     music_db = {
-
-    "편재": f"{target_y}년 음악적으로는 시장 확장과 공연 기회가 늘어날 가능성이 있습니다. 상업적인 프로젝트와 협업이 늘어날 수 있습니다.",
-
-    "정재": f"{target_y}년은 음악 작업의 완성도를 높이기에 좋은 시기입니다. 사운드 디테일과 안정적인 활동이 중요합니다.",
-
-    "편관": f"{target_y}년은 강한 무대 에너지와 카리스마가 돋보이는 시기입니다.",
-
-    "정관": f"{target_y}년은 음악적 명예와 공식 활동이 늘어날 가능성이 있습니다.",
-
-    "편인": f"{target_y}년은 실험적인 음악과 새로운 사운드 탐구가 좋은 결과로 이어질 수 있습니다.",
-
-    "정인": f"{target_y}년은 감성적인 음악과 서정적인 작품이 좋은 반응을 얻을 수 있습니다.",
-
-    "비견": f"{target_y}년은 본인만의 시그니처 사운드를 확립하기 좋은 시기입니다.",
-
-    "겁재": f"{target_y}년은 강렬한 라이브 퍼포먼스가 돋보이는 시기입니다.",
-
-    "식신": f"{target_y}년은 창작의 풍요가 나타나는 시기입니다. 곡 작업이 잘 풀릴 수 있습니다.",
-
-    "상관": f"{target_y}년은 화려한 표현과 실험적인 음악이 주목받을 가능성이 있습니다."
+        "편인": f"아티스트로서 {target_y}년은 본인만의 '실험적인 사운드'를 발견하는 해입니다. 대중적인 유행을 쫓기보다 깊이 있는 사운드 디자인이나 독특한 질감의 연주에 몰입할 때 가장 수준 높은 작품이 탄생합니다. 독창적인 영감이 쏟아지는 시기이니 본인만의 고유한 음악 세계를 구축하는 데 집중하십시오. 매니아층의 강력한 지지를 받는 명반을 작업하기에 더없이 좋은 운세입니다.",
+        "정인": f"음악적으로 {target_y}년은 사람들의 마음을 위로하는 '서정적인 감수성'이 돋보이는 해입니다. 본인의 음악적 뿌리를 되새기며 따뜻하고 깊은 울림을 주는 곡들이 좋은 반응을 얻게 됩니다. 선배 아티스트나 전문가의 조언이 큰 힘이 되며, 안정적인 계약 환경 속에서 창작 활동에만 전념할 수 있는 귀한 시간이 주어질 것입니다. 당신의 음악이 공식적인 명예를 얻게 되는 흐름입니다.",
+        "비견": f"음악가로서 {target_y}년은 독보적인 '시그니처 사운드'를 확립하는 해입니다. 누구와도 타협하지 않는 본인만의 음악적 철학을 앨범에 온전히 담아내기에 최적이며, 밴드 내에서 강력한 음악적 주도권을 행사하게 됩니다. 가장 나다운 소리가 무엇인지 탐구하고 이를 대담하게 표현하십시오. 본인의 이름 자체가 하나의 장르가 되는 시발점이 될 것이며 예술적 자산이 견고해지는 해입니다.",
+        "겁재": f"아티스트로서 {target_y}년은 '파격적인 에너지'와 역동적인 연주가 빛을 발하는 해입니다. 라이브 퍼포먼스에서 폭발적인 반응을 이끌어내며 청중을 압도하는 무대 장악력을 보여주게 됩니다. 기존의 스타일을 과감히 탈피한 새로운 장르와의 협업이나 시도가 큰 반향을 일으킬 것입니다. 경쟁적인 음악 씬에서 본인만의 야성적인 매력을 확실히 각인시켜 독보적인 위치를 점유하게 될 것입니다.",
+        "식신": f"음악적으로 {target_y}년은 '창작의 풍요'가 깃드는 해입니다. 억지로 짜내지 않아도 일상의 감각들이 멜로디와 리듬으로 자연스럽게 변환되는 경험을 하게 됩니다. 사운드 믹싱 과정에서 따뜻하고 풍성한 질감을 발견하게 되며, 본인이 즐겁게 만든 음악이 대중에게도 큰 사랑을 받는 기쁨을 누리게 됩니다. 다작을 하기에 매우 좋은 시기이니 떠오르는 영감들을 놓치지 말고 기록하십시오.",
+        "상관": f"음악가로서 {target_y}년은 화려한 테크닉과 '천재적인 쇼맨십'이 돋보이는 해입니다. 트렌드를 앞서가는 세련된 감각과 파격적인 연출이 결합되어 대중의 시선을 완전히 사로잡게 됩니다. 화려한 연주와 기발한 편곡이 본인의 브랜드 가치를 극대화하며, 미디어와 팬들로부터 뜨거운 찬사를 받게 될 것입니다. 본인의 끼를 아낌없이 발산하여 음악적 스포트라이트를 마음껏 즐기시길 바랍니다.",
+        "편재": f"음악적으로 {target_y}년은 '대규모 공연'과 상업적 성공 가능성이 매우 높은 해입니다. 사운드의 규모감을 키우고 과감한 편곡을 시도해 보십시오. 본인의 음악이 더 넓은 시장으로 유통되는 강력한 확장 운을 가지고 있습니다. 자본과 예술성이 결합되는 해이니 고사양의 장비를 도입하거나 대규모 스튜디오 작업을 추진하기에 적합합니다. 대중은 당신의 압도적인 사운드에 열광할 것입니다.",
+        "정재": f"아티스트로서 {target_y}년은 사운드의 '완성도와 정밀함'에 집중하는 해입니다. 정교한 믹싱과 정돈된 편곡이 대중에게 깊은 신뢰감을 주며, 본인만의 견고한 사운드 포트폴리오가 완성됩니다. 꾸준한 연습과 정기적인 릴리즈가 팬층을 두텁게 만들며, 음악 활동을 통한 수익 구조가 안정적으로 정착되는 시기입니다. 화려함보다는 내실 있는 음악적 깊이가 당신의 가치를 증명해 줄 것입니다.",
+        "편관": f"음악적으로 {target_y}년은 무대 위에서의 '압도적인 카리스마'가 돋보이는 해입니다. 거칠고 강력한 사운드나 웅장한 연출이 효과적이며, 본인을 극한으로 몰아붙이는 연습이 명연주를 탄생시킬 것입니다. 어려운 테크닉을 완벽히 정복하여 평단으로부터 음악적 권위를 인정받게 됩니다. 비장하고 진지한 접근이 오히려 대중을 전율하게 만드는 강력한 무기가 되어 줄 명예로운 해입니다.",
+        "정관": f"아티스트로서 {target_y}년은 정석적인 미학과 '공신력 있는 활동'이 빛나는 해입니다. 대중적인 공감을 얻기 쉬운 세련된 멜로디와 깔끔한 사운드 디자인이 강점입니다. 공식적인 시상식이나 공신력 있는 매체의 협업 제안이 따를 수 있으며, 본인의 음악적 전문성을 세상으로부터 공인받게 됩니다. 완성된 형식미를 보여줄 때 가장 큰 찬사를 받게 되며 음악적 커리어가 공고해지는 시기입니다."
     }
 
-    gen_rep = general_db.get(ten_god)
-    mus_rep = music_db.get(ten_god)
+    gen_rep = general_db.get(ten_god, "풍부한 운세 데이터를 불러오는 중입니다.")
+    mus_rep = music_db.get(ten_god, "음악적 영감을 분석 중입니다.")
+    return current_god_label, gen_rep, mus_rep
 
-    return current_god, gen_rep, mus_rep
-
-
-# -----------------------------
-# UI
-# -----------------------------
-
+# 4️⃣ 메인 UI 실행 부분
 st.markdown("<div class='main-title'><h1>🎸 음악인을 위한 사주통변 Ver 1.0</h1></div>", unsafe_allow_html=True)
 
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
-
     with st.form("saju_form"):
-
         u_name = st.text_input("성함", value="임환백")
-
-        c1,c2,c3 = st.columns(3)
-
-        with c1:
-            b_y = st.number_input("출생년",1900,2100,1981)
-
-        with c2:
-            b_m = st.number_input("출생월",1,12,2)
-
-        with c3:
-            b_d = st.number_input("출생일",1,31,7)
-
-        target_y = st.number_input("조회 연도",1900,2100,2026)
-
+        c1, c2, c3 = st.columns(3)
+        with c1: b_y = st.number_input("출생년", 1900, 2100, 1981)
+        with c2: b_m = st.number_input("출생월", 1, 12, 2)
+        with c3: b_d = st.number_input("출생일", 1, 31, 7)
+        target_y = st.number_input("조회 연도", 1900, 2100, 2026)
         submitted = st.form_submit_button("🎭 심층 리포트 생성", use_container_width=True)
 
-
-# -----------------------------
-# 결과
-# -----------------------------
-
 if submitted:
-
-    god, gen_rep, mus_rep = get_comprehensive_report(u_name,target_y)
-
+    god, gen_rep, mus_rep = get_comprehensive_report(u_name, target_y)
+    
     st.markdown(f"### 🍀 {u_name} 아티스트님 심층 리포트")
-
+    
+    # 사주 그리드 (병화 일간 고정 레이아웃)
     st.markdown("""
-    <div class='saju-grid'>
-    <div class='saju-box'>신유(辛酉)<br>년주</div>
-    <div class='saju-box'>경인(庚寅)<br>월주</div>
-    <div class='saju-box'>병진(丙辰)<br>일주</div>
-    <div class='saju-box'>신묘(辛卯)<br>시주</div>
-    </div>
+        <div class='saju-grid'>
+            <div class='saju-box'>신유(辛酉)<br>년주</div><div class='saju-box'>경인(庚寅)<br>월주</div>
+            <div class='saju-box'>병진(丙辰)<br>일주</div><div class='saju-box'>신묘(辛卯)<br>시주</div>
+        </div>
     """, unsafe_allow_html=True)
 
+    st.markdown(f"<div class='section-card'><h2>👤 타고난 성정</h2><div class='content-text'>{u_name}님은 병화(丙火) 일간으로 태양과 같은 에너지를 가진 사주입니다. 예술적 표현력과 리더십이 동시에 나타나는 독보적인 명식을 지니고 계십니다.</div></div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='music-card'><h2>🎸 음악적 사주</h2><div class='content-text'>정밀한 금(金)의 기운이 사운드의 디테일을 완벽하게 잡고, 병화의 폭발적인 에너지가 무대 위 발산력을 강화합니다. 하이엔드 지향성과 야성미를 동시에 갖춘 음악가입니다.</div></div>", unsafe_allow_html=True)
 
+    st.markdown(f"### 📅 {target_y}년 운세 분석")
     st.markdown(f"""
-    <div class='section-card'>
-    <h2>👤 타고난 성정</h2>
-    <div class='content-text'>
-    {u_name}님은 병화(丙火) 일간으로 태양과 같은 에너지를 가진 사주입니다.
-    예술적 표현력과 리더십이 동시에 나타나는 특징이 있습니다.
-    </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-    st.markdown(f"""
-    <div class='music-card'>
-    <h2>🎸 음악적 사주</h2>
-    <div class='content-text'>
-    금(金)의 기운이 사운드 디테일을 잡고 병화의 에너지가 무대 발산력을 강화합니다.
-    </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-
-    st.markdown(f"### 📅 {target_y}년 운세")
-
-    st.markdown(f"""
-    <div class='target-year-card'>
-    <h2>일반 운세</h2>
-    <div class='content-text'><b>{god}</b><br>{gen_rep}</div>
-    </div>
-
-    <div class='music-card'>
-    <h2>음악 운세</h2>
-    <div class='content-text'>{mus_rep}</div>
-    </div>
+        <div class='target-year-card'>
+            <h2>🏙️ 일반 운세 흐름</h2>
+            <div class='content-text'><b>[{god}]</b><br>{gen_rep}</div>
+        </div>
+        <div class='music-card' style='background-color:#FFF5F7;'>
+            <h2>🎹 음악적 흐름 이야기</h2>
+            <div class='content-text'>{mus_rep}</div>
+        </div>
     """, unsafe_allow_html=True)
