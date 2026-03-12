@@ -33,7 +33,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     if calendar_type == "음력":
         is_leap_month = st.checkbox("윤달인가요?")
 
-    target_year = st.number_input("운세를 보고 싶은 연도", min_value=2024, max_value=2100, value=2026)
+    target_year = st.number_input("운세를 보고 싶은 연도", min_value=1900, max_value=2100, value=2026)
     gender = st.radio("성별", ["남성", "여성"], horizontal=True)
 
 # 3. 분석 버튼 및 결과 출력
@@ -98,7 +98,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
         st.write(f"**분석 연도:** {target_year}년")
 
-        # 3층: 삼재 분석 (고정)
+        # 3층: 삼재 분석 (고정 및 아이콘 오타 수정)
         st.divider()
         my_year_zi = eight_char.getYear()[1]
         samjae_groups = {
@@ -118,7 +118,8 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             current_status = samjae_types[samjae_idx]
             st.error(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간({current_status})에 해당합니다.**{desc_text}")
         else:
-            st.success(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**{desc_text}")
+            # [수정] 삼재가 아닐 때의 아이콘을 ✅로 변경
+            st.success(f"✅ **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**{desc_text}")
 
         # --- [4층: 정통 명리 심층 통변] ---
         st.divider()
@@ -136,7 +137,6 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         my_day_gan = d_gan[0]
         my_element = gan_elements.get(my_day_gan, "알수없음")
         
-        # 오행 분포 표기 (모든 오행 0 포함)
         col_res1, col_res2 = st.columns(2)
         with col_res1:
             st.write("**[오행 분포]**")
@@ -146,7 +146,6 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             st.write("**[일간 속성]**")
             st.code(f"{my_day_gan} ({my_element}의 기운)")
 
-        # [명리 분석 1: 오행의 세력과 성정]
         max_ele = max(counts, key=counts.get)
         part1 = f"{name}님의 사주 구성을 분석한 결과, 현재 {max_ele}의 기운이 {counts[max_ele]}개로 가장 강성한 세력을 형성하고 있습니다. "
         if counts[max_ele] >= 3:
@@ -154,24 +153,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         else:
             part1 += "오행의 분포가 전반적으로 중화(中和)를 이루고 있어 성품이 원만하고 매사에 균형 감각이 뛰어납니다. 편중되지 않은 시각으로 사물을 바라보며 주변 환경과 조화롭게 융화되는 유연한 기질을 갖추고 있습니다. "
 
-        # [명리 분석 2: 일간의 오상(五常)적 특성]
         part2 = f"본신인 일간 {my_day_gan}은 {my_element}의 성질을 지니고 있습니다. "
         if my_element == "木": part2 += "오상 중 인(仁)을 상징하며, 나무가 위로 뻗어 나가는 성질처럼 창의적인 기획력과 어질고 진취적인 마음을 품고 있습니다. "
         elif my_element == "火": part2 += "오상 중 예(禮)를 상징하며, 불꽃이 주변을 밝히듯 열정적이고 자신을 드러내어 소통하려는 표현력이 강력한 기질입니다. "
-        elif my_element == "土": part2 += "오상 중 신(信)을 상징하며, 대지가 만물을 품듯 묵직하고 신의가 두터우며 매사에 신중하여 원칙을 변함없이 지켜나가는 중용의 덕이 있습니다. "
-        elif my_element == "金": part2 += "오상 중 의(義)를 상징하며, 금속의 날카로운 결단력처럼 시비지심이 분명하고 일 처리에 있어 완벽을 기하는 냉철한 성정입니다. "
-        else: part2 += "오상 중 지(智)를 상징하며, 물이 흐르듯 유연하고 지혜로우며 깊은 감수성과 영감을 바탕으로 내면의 통찰을 이뤄내는 명조입니다. "
-
-        # [명리 분석 3: 월지(사회궁)와의 관계]
-        part3 = f"사회적 환경과 격국을 결정짓는 월지의 {m_zi[0]}와 일간의 관계를 비추어 볼 때, {name}님은 "
-        # 간단한 비겁/식재관 분기 (정밀 로직의 기초)
-        if m_zi[0] in zi_elements and zi_elements[m_zi[0]] == my_element:
-            part3 += "비겁의 기운이 월지를 점하여 자아의 주체성이 대단히 강조되는 구조입니다. 독립적인 환경에서 본인의 역량을 발휘할 때 가장 큰 성과를 거두는 주체적 명조입니다. "
-        else:
-            part3 += "본인의 에너지를 외부의 목적이나 가치로 치환하는 능력이 발달하였습니다. 주어진 상황을 냉철하게 분석하고 이를 실무적인 결과물로 도출해내는 현실적 감각이 탁월합니다. "
-
-        st.info(part1 + "\n\n" + part2 + "\n\n" + part3)
-        # ---------------------------------------------------
-
-    else:
-        st.warning("성함을 입력해 주세요.")
+        elif my_element == "土": part2 += "오상 중 신(信)을 상징하며, 대지가 만물을 품듯 묵직하고 신의가 두터우며 매
