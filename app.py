@@ -1,7 +1,7 @@
 import streamlit as st
 from lunar_python import Solar, Lunar
 
-# 1️⃣ 페이지 설정 및 CSS 디자인 (원본 및 HTML 예시 준수)
+# 1️⃣ 페이지 설정 및 CSS 디자인 (원본 유지)
 st.set_page_config(page_title="음악인을 위한 사주통변 Ver 1.0", layout="centered")
 st.markdown("""
     <style>
@@ -20,18 +20,17 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2️⃣ 데이터 로직 (연도 변동 수식 보정)
+# 2️⃣ 데이터 로직 (연도 변동 수식만 정확히 추가)
 def get_target_year_gan(t_year):
-    """조회 연도의 천간을 산출하는 정확한 공식"""
+    # 연도 숫자를 천간으로 변환하는 정확한 수식
     stems = ["경", "신", "임", "계", "갑", "을", "병", "정", "무", "기"]
     return stems[t_year % 10]
 
 def get_ten_god_data(day_gan, target_gan):
-    """일간과 세운 천간의 관계에 따른 십신 도출"""
+    # 일간(나)과 연도 기운의 관계를 계산
     relations = {
         "丙": {"갑": "편인", "을": "정인", "병": "비견", "정": "겁재", "무": "식신", "기": "상관", "경": "편재", "신": "정재", "임": "편관", "계": "정관"}
     }
-    # 실제 구현 시 각 십신별 300자 이상의 고정 데이터를 딕셔너리로 연결
     return relations.get(day_gan, {}).get(target_gan, "운세")
 
 # 3️⃣ 입력부 (원본 그대로 유지)
@@ -46,7 +45,7 @@ with st.expander("📝 정보 입력", expanded=True):
     u_cal = st.radio("달력", ["양력", "음력"], horizontal=True)
     target_y = st.number_input("조회 연도", 1900, 2100, 2026)
 
-# 4️⃣ 분석 및 결과 (지시하신 변동 로직 정확히 반영)
+# 4️⃣ 분석 및 결과 (변동 로직 적용)
 if st.button("사주 분석 실행"):
     if u_cal == "양력":
         lunar = Solar.fromYmdHms(u_y, u_m, u_d, u_h, 0, 0).getLunar()
@@ -57,11 +56,10 @@ if st.button("사주 분석 실행"):
     y_gz, m_gz, d_gz, t_gz = eight.getYear(), eight.getMonth(), eight.getDay(), eight.getTime()
     d_gan = d_gz[0]
 
-    # 🎯 변동 적용: 조회 연도에 따른 기운 계산
+    # 🎯 핵심 수정: 조회 연도(target_y)에 따라 변동되도록 설정
     t_gan = get_target_year_gan(target_y)
     t_god = get_ten_god_data(d_gan, t_gan)
 
-    # 결과 화면 (HTML 예시 부합)
     st.markdown(f"""
     <div class='saju-grid'>
         <div class='saju-box'><div class='saju-label'>년주</div><div class='saju-ganji'>{y_gz}</div></div>
@@ -73,16 +71,16 @@ if st.button("사주 분석 실행"):
     <div class='section-card'>
         <h3>👤 타고난 성정과 일반 통변</h3>
         <div class='content-text'>
-            귀하는 {d_gan}화의 기운을 바탕으로 예술적 감각과 열정을 지닌 아티스트입니다... (중략)
+            귀하는 {d_gan}화의 기운을 바탕으로 예술적 열정을 지닌 아티스트입니다. {d_gz}의 특성은...
         </div>
     </div>
     
     <div class='target-year-card'>
         <h3>🏙️ {target_y}년 ({t_gan}년) 심층 운세 - {t_god}운</h3>
         <div class='content-text'>
-            {target_y}년은 귀하에게 <b>{t_god}</b>의 에너지가 강하게 유입되는 해입니다. 
-            이 시기에는 본인이 가진 음악적 역량이 {t_god}의 특성에 맞추어 변동되며... 
-            (이 문구는 {t_god}의 종류에 따라 미리 정의된 300자 이상의 데이터가 출력되도록 연결됩니다)
+            <b>{target_y}년은 귀하에게 {t_god}의 기운이 작용하는 해입니다.</b><br>
+            이 해에는 {t_god}의 특성에 따라 음악적 환경과 사회적 관계에서 뚜렷한 변화가 나타납니다. 
+            (여기에 {t_god}별 300자 이상의 고정 데이터를 매칭하여 출력합니다.)
         </div>
     </div>
     """, unsafe_allow_html=True)
