@@ -6,7 +6,7 @@ st.set_page_config(page_title="음악인 사주 서비스", page_icon="🎸")
 
 st.title("🎸 음악인을 위한 사주통변")
 
-# 2. 사주 정보 입력 섹션 (기존 코드 보존)
+# 2. 사주 정보 입력 섹션 (1층: 고정)
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     name = st.text_input("성함", value="")
     
@@ -77,6 +77,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             
             t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
 
+        # 2층: 사주 원국 출력 (고정)
         st.divider()
         st.subheader(f"📊 {name}님의 사주 원국 (8글자)")
 
@@ -97,34 +98,76 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
         st.write(f"**분석 연도:** {target_year}년")
 
-        # --- [3층: 삼재 분석] 설명까지 박스 내부 포함 버전 ---
+        # 3층: 삼재 분석 (고정)
         st.divider()
-        
         my_year_zi = eight_char.getYear()[1]
         samjae_groups = {
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
             "巳": ["亥", "子", "丑"], "酉": ["亥", "子", "丑"], "丑": ["亥", "子", "丑"],
-            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "미"], "未": ["巳", "午", "미"]
+            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
         }
         my_samjae_zis = samjae_groups.get(my_year_zi, [])
-        
         target_solar = Solar.fromYmd(target_year, 1, 1)
         target_year_zi = target_solar.getLunar().getEightChar().getYear()[1]
-
-        # 이미지와 동일한 구성을 위해 한 문장으로 합침
         desc_text = "\n\n삼재는 9년마다 돌아오는 3년의 조심하는 시기를 뜻합니다."
 
         if target_year_zi in my_samjae_zis:
-            # 삼재 기간일 때: 적색 박스
             samjae_idx = my_samjae_zis.index(target_year_zi)
             samjae_types = ["들삼재", "눌삼재", "날삼재"]
             current_status = samjae_types[samjae_idx]
-            
             st.error(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간({current_status})에 해당합니다.**{desc_text}")
         else:
-            # 삼재 기간이 아닐 때: 녹색 박스
             st.success(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**{desc_text}")
+
+        # --- [4층: 실시간 조립형 심층 통변 추가] ---
+        st.divider()
+        st.subheader(f"📜 {name}님 사주 원국 정밀 분석 리포트")
+
+        gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
+        zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
+        all_chars = [y_gan[0], y_zi[0], m_gan[0], m_zi[0], d_gan[0], d_zi[0], t_gan[0], t_zi[0]]
+        
+        counts = {"木": 0, "火": 0, "土": 0, "金": 0, "水": 0}
+        for c in all_chars:
+            if c in gan_elements: counts[gan_elements[c]] += 1
+            elif c in zi_elements: counts[zi_elements[c]] += 1
+
+        my_day_gan = d_gan[0]
+        my_element = gan_elements.get(my_day_gan, "알수없음")
+        
+        col_res1, col_res2 = st.columns(2)
+        with col_res1:
+            st.write("**[오행의 세력]**")
+            res_list = [f"{k}({v})" for k, v in counts.items() if v > 0]
+            st.code(" | ".join(res_list))
+        with col_res2:
+            st.write("**[일간의 본질]**")
+            st.code(f"{my_day_gan} ({my_element}의 기운)")
+
+        max_ele = max(counts, key=counts.get)
+        part1 = f"{name}님의 사주 구성을 분석한 결과, 현재 {max_ele}의 기운이 {counts[max_ele]}개로 가장 지배적인 위치를 점하고 있습니다. "
+        if counts[max_ele] >= 3:
+            part1 += f"이처럼 특정 오행이 강하게 응축된 경우, 음악적으로는 한 장르를 깊게 파고드는 집요함과 독보적인 예술적 고집을 상징합니다. 남들과 타협하지 않는 {name}님만의 고유한 사운드를 창조하는 데 최적화된 에너지입니다. "
+        else:
+            part1 += "전반적으로 오행의 균형이 잡혀 있어, 한 가지 스타일에 머물지 않고 시대의 흐름에 따라 변신을 거듭하는 팔색조 같은 창작 기질을 보여줍니다. "
+
+        part2 = f"본신인 {my_day_gan}의 특성을 살펴보면, {my_element}의 성질을 타고났습니다. "
+        if my_element == "木": part2 += "마치 나무가 자라나듯 무에서 유를 창조하는 기획력과 추진력이 뛰어나며, 신선한 멜로디 라인을 구성하는 데 천부적인 소질이 있습니다. "
+        elif my_element == "火": part2 += "불꽃처럼 타오르는 열정으로 청중을 압도하는 무대 매너를 가졌으며, 감정의 즉각적인 폭발을 음악에 녹여내는 표현력이 대단히 강력합니다. "
+        elif my_element == "土": part2 += "대지처럼 넓고 묵직한 안정감을 주며, 유행에 흔들리지 않는 클래식하고 깊이 있는 음악적 철학을 고수하는 뚝심이 큰 장점입니다. "
+        elif my_element == "金": part2 += "금속의 날카로움처럼 정확한 박자 감각과 군더더기 없는 편곡 능력을 갖췄으며, 완벽을 기하는 믹싱과 마스터링 단계에서 빛을 발하는 완벽주의자입니다. "
+        else: part2 += "물처럼 유연하고 깊은 감수성을 지녀, 듣는 이의 마음을 적시는 서정적인 가사와 몽환적인 사운드 스케이프를 그려내는 데 탁월한 능력이 있습니다. "
+
+        part3 = f"사회적 환경을 뜻하는 월지의 {m_zi[0]}와의 관계를 볼 때, {name}님은 "
+        if m_zi[0] in zi_elements and zi_elements[m_zi[0]] == my_element:
+            part3 += "자신과 뜻을 같이하는 동료 아티스트들과의 협업에서 최상의 결과물을 얻는 구조입니다. 밴드 활동이나 크루 중심의 음악 작업이 큰 복으로 작용할 것입니다. "
+        else:
+            part3 += "주변의 영향보다는 본인 내부의 목소리에 집중하는 장인 정신이 강하며, 자신만의 독창적인 스타일(식상)을 결과물(재성)로 치환해내는 힘이 강력합니다. "
+
+        part3 += f"선택하신 {target_year}년은 이러한 내면의 에너지가 현실 세계의 운과 만나 결실을 맺거나 새로운 방향성을 모색하게 되는 중요한 시점이 될 것입니다."
+
+        st.info(part1 + "\n\n" + part2 + "\n\n" + part3)
         # ---------------------------------------------------
 
     else:
