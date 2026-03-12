@@ -21,27 +21,26 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-# 2️⃣ 천간지지 및 십신 계산 로직
-def get_year_stem_branch(year):
-    stems = ["갑","을","병","정","무","기","경","신","임","계"]
-    branches = ["자","축","인","묘","진","사","오","미","신","유","술","해"]
-    stem = stems[(year - 4) % 10]
-    branch = branches[(year - 4) % 12]
-    return stem, branch
-
-def get_ten_god_for_bing(stem):
+# 2️⃣ 데이터베이스 및 로직 (모든 수식 및 300자 이상 고밀도 통변 포함)
+def get_ten_god_label(day_stem, other_stem):
+    # 십신 매핑 테이블 (병화 일간 기준 및 범용 로직 지원)
+    # 실제 정밀 계산을 위해 필요한 매핑입니다.
     mapping = {
-        "갑":"편인", "을":"정인", "병":"비견", "정":"겁재", "무":"식신",
-        "기":"상관", "경":"편재", "신":"정재", "임":"편관", "계":"정관"
+        "갑": {"갑":"비견", "을":"겁재", "병":"식신", "정":"상관", "무":"편재", "기":"정재", "경":"편관", "신":"정관", "임":"편인", "계":"정인"},
+        "을": {"갑":"겁재", "을":"비견", "병":"상관", "정":"식신", "무":"정재", "기":"편재", "경":"정관", "신":"편관", "임":"정인", "계":"편인"},
+        "병": {"갑":"편인", "을":"정인", "병":"비견", "정":"겁재", "무":"식신", "기":"상관", "경":"편재", "신":"정재", "임":"편관", "계":"정관"},
+        "정": {"갑":"정인", "을":"편인", "병":"겁재", "정":"비견", "무":"상관", "기":"식신", "경":"정재", "신":"편재", "임":"정관", "계":"편관"},
+        "무": {"갑":"편관", "을":"정관", "병":"편인", "정":"정인", "무":"비견", "기":"겁재", "경":"식신", "신":"상관", "임":"편재", "계":"정재"},
+        "기": {"갑":"정관", "을":"편관", "병":"정인", "정":"편인", "무":"겁재", "기":"비견", "경":"상관", "신":"식신", "임":"정재", "계":"편재"},
+        "경": {"갑":"편재", "을":"정재", "병":"편관", "정":"정관", "무":"편인", "기":"정인", "경":"비견", "신":"겁재", "임":"식신", "계":"상관"},
+        "신": {"갑":"정재", "을":"편재", "병":"정관", "정":"편관", "무":"정인", "기":"편인", "경":"겁재", "신":"비견", "임":"상관", "계":"식신"},
+        "임": {"갑":"식신", "을":"상관", "병":"편재", "정":"정재", "무":"편관", "기":"정관", "경":"편인", "신":"정인", "임":"비견", "계":"겁재"},
+        "계": {"갑":"상관", "을":"식신", "병":"정재", "정":"편재", "무":"정관", "기":"편관", "경":"정인", "신":"편인", "임":"겁재", "계":"비견"}
     }
-    return mapping.get(stem)
+    return mapping.get(day_stem, {}).get(other_stem, "분석중")
 
-# 3️⃣ 고밀도 통변 데이터베이스 (분량 조절 없이 전체 수록)
-def get_comprehensive_report(name, target_y):
-    stem, branch = get_year_stem_branch(target_y)
-    ten_god = get_ten_god_for_bing(stem)
-    current_god_label = f"{stem}{branch}년 ({ten_god})"
-
+def get_comprehensive_data(ten_god, target_y):
+    # 300자 이상의 고밀도 통변 데이터베이스
     general_db = {
         "편인": f"{target_y}년은 내면의 통찰력과 독창적인 직관이 극대화되는 '편인'의 해입니다. 본인만의 전문적인 기술이나 지식을 깊이 있게 파고들기에 최적의 시기이며, 남들이 보지 못하는 이면의 가치를 발견하는 능력이 탁월해집니다. 조금은 고독한 사색의 시간이 필요할 수 있으나, 이 과정에서 얻은 영감은 향후 본인의 독보적인 자산이 될 것입니다. 전통적인 방식보다는 본인만의 스타일로 문제를 해결할 때 큰 성취를 맛볼 수 있으며, 정신적인 성장과 더불어 예술적 깊이가 한층 더 정교해지는 한 해가 될 것입니다. 평소에 접하지 못했던 새로운 학문이나 명상, 철학적 사유를 통해 삶의 본질적인 해답을 찾게 되는 신비로운 한 해가 될 것입니다.",
         "정인": f"{target_y}년은 안정적인 지원과 후원운이 따르는 '정인'의 해입니다. 주변의 신뢰를 바탕으로 문서적인 계약이나 자격 취득에서 유리한 고지를 점하게 되며, 윗사람이나 귀인의 도움으로 일이 순조롭게 풀리는 경험을 하게 됩니다. 마음의 평온을 찾고 내실을 기하기에 가장 좋은 시기이며, 본인이 가진 재능을 세상이 공식적으로 인정해주기 시작하는 흐름입니다. 성급한 추진보다는 순리에 맡길 때 우주의 기운이 본인을 돕게 되며, 삶의 질이 한 단계 업그레이드되는 편안한 결실을 얻게 될 것입니다. 학업이나 자기계발을 통해 자아를 실현하고 정신적인 풍요를 누리는 시기입니다.",
@@ -68,11 +67,9 @@ def get_comprehensive_report(name, target_y):
         "정관": f"아티스트로서 {target_y}년은 정석적인 미학과 '공신력 있는 활동'이 빛나는 해입니다. 대중적인 공감을 얻기 쉬운 세련된 멜로디와 깔끔한 사운드 디자인이 강점입니다. 공식적인 시상식이나 공신력 있는 매체의 협업 제안이 따를 수 있으며, 본인의 음악적 전문성을 세상으로부터 공인받게 됩니다. 완성된 형식미를 보여줄 때 가장 큰 찬사를 받게 되며 음악적 커리어가 공고해지는 시기입니다. 문화 예술 지원금이나 공적 프로젝트와의 인연도 매우 깊어 본인의 명예를 드높이는 해가 될 것입니다."
     }
 
-    gen_rep = general_db.get(ten_god, "풍부한 운세 데이터를 불러오는 중입니다.")
-    mus_rep = music_db.get(ten_god, "음악적 영감을 분석 중입니다.")
-    return current_god_label, gen_rep, mus_rep
+    return general_db.get(ten_god), music_db.get(ten_god)
 
-# 4️⃣ 메인 UI 실행 부분
+# 3️⃣ 메인 UI 및 입력단 (보완된 버전)
 st.markdown("<div class='main-title'><h1>🎸 음악인을 위한 사주통변 Ver 1.0</h1></div>", unsafe_allow_html=True)
 
 
@@ -90,69 +87,102 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
         # 2행: 출생 시간 및 달력 유형
         t1, t2 = st.columns(2)
         with t1:
-            u_time = st.selectbox("출생 시간 (시호)", [
+            u_hour = st.selectbox("출생 시간 (시호)", [
                 "01:30~03:30 축시(丑時)", "03:30~05:30 인시(寅時)", "05:30~07:30 묘시(卯時)", 
                 "07:30~09:30 진시(辰時)", "09:30~11:30 사시(巳時)", "11:30~13:30 오시(午時)", 
                 "13:30~15:30 미시(未時)", "15:30~17:30 신시(申時)", "17:30~19:30 유시(酉時)", 
-                "19:30~21:30 술시(戌時)", "21:30~23:30 해시(亥時)", "23:30~01:30 자시(子時)", "모름"
+                "19:30~21:30 술시(戌時)", "21:30~23:30 해시(亥時)", "23:30~01:30 자시(子시)", "모름"
             ], index=3)
+            # 시호 기반 시간(hour) 매핑 (간단화)
+            hour_map = {"축시":2, "인시":4, "묘시":6, "진시":8, "사시":10, "오시":12, "미시":14, "신시":16, "유시":18, "술시":20, "해시":22, "자시":0}
+            sel_hour = 6 # 기본
+            for k in hour_map:
+                if k in u_hour: sel_hour = hour_map[k]
+
         with t2:
-            cal_type = st.radio("달력 종류 선택", ["양력", "음력", "음력(윤달)"], horizontal=True)
+            cal_type = st.radio("달력 종류", ["양력", "음력", "음력(윤달)"], horizontal=True)
             
         # 3행: 운세 조회 연도
-        target_y = st.number_input("운세 조회 연도 (미래 운세 가능)", 1900, 2100, 2026)
+        target_y = st.number_input("운세 조회 연도", 1900, 2100, 2026)
         
         submitted = st.form_submit_button("🎭 심층 이원 통변 리포트 생성", use_container_width=True)
 
-# 5️⃣ 결과 출력
+# 4️⃣ 분석 및 결과 출력
 if submitted:
-    god, gen_rep, mus_rep = get_comprehensive_report(u_name, target_y)
-    
-    st.markdown(f"### 🍀 {u_name} 아티스트님 심층 리포트")
-    
-    # 사주 그리드 (고정 명식 데이터 출력)
-    st.markdown("""
-        <div class='saju-grid'>
-            <div class='saju-box'>신유(辛酉)<br>년주</div><div class='saju-box'>경인(庚寅)<br>월주</div>
-            <div class='saju-box'>병진(丙辰)<br>일주</div><div class='saju-box'>신묘(辛卯)<br>시주</div>
-        </div>
-    """, unsafe_allow_html=True)
-
-    # 섹션 1: 타고난 성정
-    st.markdown(f"""
-        <div class='section-card'>
-            <h2>👤 타고난 성정</h2>
-            <div class='content-text'>
-                {u_name}님은 만물을 밝게 비추는 <b>병화(丙火)</b> 일간으로 태어나셨습니다. 태양과 같은 정열과 에너지를 지니고 계시며, 
-                솔직담백하고 뒤끝이 없는 화끈한 성격이 특징입니다. 주변을 환하게 밝히는 리더십과 예술적 표현력이 조화를 이루어, 
-                어느 곳에서나 눈에 띄는 존재감을 발휘하는 명식을 지니고 계십니다.
+    # 사주 계산 (lunar_python 라이브러리 활용)
+    try:
+        if cal_type == "양력":
+            solar = Solar.fromYmdHms(b_y, b_m, b_d, sel_hour, 0, 0)
+            lunar = solar.getLunar()
+        else:
+            is_leap = True if "윤달" in cal_type else False
+            lunar = Lunar.fromYmdHms(b_y, b_m, b_d, sel_hour, 0, 0, is_leap)
+        
+        eight_char = lunar.getEightChar()
+        y_gz, m_gz, d_gz, t_gz = eight_char.getYear(), eight_char.getMonth(), eight_char.getDay(), eight_char.getTime()
+        
+        # 조회 연도의 천간 추출 (운세 분석용)
+        # 간편 수식 적용: (year - 4) % 10
+        stems = ["갑","을","병","정","무","기","경","신","임","계"]
+        target_stem = stems[(target_y - 4) % 10]
+        target_branch = ["자","축","인","묘","진","사","오","미","신","유","술","해"][(target_y - 4) % 12]
+        
+        # 십신 매칭 (일간 기준)
+        day_stem = d_gz[0]
+        current_ten_god = get_ten_god_label(day_stem, target_stem)
+        
+        # 결과 화면
+        st.markdown(f"### 🍀 {u_name} 아티스트님 심층 리포트")
+        
+        # 사주 그리드
+        st.markdown(f"""
+            <div class='saju-grid'>
+                <div class='saju-box'>{y_gz}<br>년주</div>
+                <div class='saju-box'>{m_gz}<br>월주</div>
+                <div class='saju-box'>{d_gz}<br>일주</div>
+                <div class='saju-box'>{t_gz}<br>시주</div>
             </div>
-        </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    # 섹션 2: 음악적 사주
-    st.markdown(f"""
-        <div class='music-card'>
-            <h2>🎸 음악적 사주 특성</h2>
-            <div class='content-text'>
-                사주 내의 <b>금(金)</b>의 기운이 사운드의 해상도와 디테일을 날카롭게 잡아주고, <b>병화(丙火)</b>의 폭발적인 에너지가 
-                무대 위에서의 발산력을 극대화합니다. 이는 하이엔드 장비에 대한 깊은 이해도와 더불어, 무대 위에서는 거친 야성미를 
-                동시에 뿜어낼 수 있는 음악가로서의 천부적인 재능을 의미합니다.
+        # 1. 타고난 성정
+        st.markdown(f"""
+            <div class='section-card'>
+                <h2>👤 타고난 성정</h2>
+                <div class='content-text'>
+                    {u_name}님은 <b>{d_gz}</b>의 기운을 타고난 아티스트입니다. 
+                    특히 일간의 <b>{day_stem}</b> 기운은 본인의 핵심 에너지를 상징하며, 이는 예술적 표현력과 창의성의 근간이 됩니다.
+                    명식 전체에 흐르는 기운은 본인의 성격과 삶의 방향성을 결정짓는 중요한 요소로 작용합니다.
+                </div>
             </div>
-        </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    # 섹션 3: 연도별 운세 (일반/음악)
-    st.markdown(f"### 📅 {target_y}년 운세 상세 분석")
-    st.markdown(f"""
-        <div class='target-year-card'>
-            <h2>🏙️ 일반 운세 흐름</h2>
-            <div class='content-text'><b>[{god}]</b><br>{gen_rep}</div>
-        </div>
-        <div class='music-card' style='background-color:#FFF5F7;'>
-            <h2>🎹 음악적 흐름 이야기</h2>
-            <div class='content-text'>{mus_rep}</div>
-        </div>
-    """, unsafe_allow_html=True)
+        # 2. 음악적 사주 특성
+        st.markdown(f"""
+            <div class='music-card'>
+                <h2>🎸 음악적 사주 특성</h2>
+                <div class='content-text'>
+                    분석된 사주팔자에 따르면, {u_name}님은 소리의 미세한 결을 감지하는 섬세함과 대중을 압도하는 에너지를 동시에 보유하고 계십니다.
+                    사운드 디자인에서의 완벽주의와 무대 위에서의 즉흥적인 발산이 공존하는 이원적 매력을 지닌 음악가입니다.
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
 
-    st.success("✨ 모든 분석이 완료되었습니다. 음악과 함께하는 빛나는 한 해가 되길 기원합니다.")
+        # 3. 연도별 운세 상세 분석
+        gen_rep, mus_rep = get_comprehensive_data(current_ten_god, target_y)
+        
+        st.markdown(f"### 📅 {target_y}년 ({target_stem}{target_branch}년) 운세 분석")
+        st.markdown(f"""
+            <div class='target-year-card'>
+                <h2>🏙️ 일반 운세 흐름</h2>
+                <div class='content-text'><b>[{current_ten_god} 운세]</b><br>{gen_rep}</div>
+            </div>
+            <div class='music-card' style='background-color:#FFF5F7;'>
+                <h2>🎹 음악적 흐름 이야기</h2>
+                <div class='content-text'>{mus_rep}</div>
+            </div>
+        """, unsafe_allow_html=True)
+
+        st.success("✨ 분석이 완료되었습니다. 당신의 음악적 여정에 우주의 기운이 함께하기를 기원합니다.")
+
+    except Exception as e:
+        st.error(f"데이터 처리 중 오류가 발생했습니다: {e}")
