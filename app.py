@@ -6,17 +6,17 @@ st.set_page_config(page_title="정통 사주 명리 분석", page_icon="☯️",
 
 st.title("☯️ 정통 사주 명리 분석")
 
-# 2. 사주 정보 입력 섹션 (원본 로직 고정)
+# 2. 사주 정보 입력 섹션 (원본 로직 100% 보존)
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     name = st.text_input("성함", value="")
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        year = st.number_input("출생년", 1900, 2026, value=1985)
+        year = st.number_input("출생년", 1900, 2026, value=2000)
     with col2:
-        month = st.number_input("출생월", 1, 12, value=8)
+        month = st.number_input("출생월", 1, 12, value=1)
     with col3:
-        day = st.number_input("출생일", 1, 31, value=13)
+        day = st.number_input("출생일", 1, 31, value=1)
 
     time_options = [
         "모름",
@@ -25,7 +25,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
         "11:30~13:30 오시 (午)", "13:30~15:30 미시 (未)", "15:30~17:30 신시 (申)",
         "17:30~19:30 유시 (酉)", "19:30~21:30 술시 (戌)", "21:30~23:30 해시 (亥)"
     ]
-    birth_time = st.selectbox("출생 시간", time_options, index=11)
+    birth_time = st.selectbox("출생 시간", time_options, index=0)
     
     calendar_type = st.radio("달력 선택", ["양력", "음력"], horizontal=True)
     
@@ -39,7 +39,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
 # 3. 분석 버튼 및 결과 출력
 if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=True):
     if name:
-        # [원본 로직] 날짜 변환
+        # [원본 로직] 날짜 변환 및 8글자 추출
         if calendar_type == "양력":
             date_obj = Solar.fromYmd(year, month, day)
             lunar_obj = date_obj.getLunar()
@@ -51,14 +51,14 @@ if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=T
         eight_char = lunar_obj.getEightChar()
         
         gan_ko = {"甲":"갑", "乙":"을", "丙":"병", "丁":"정", "戊":"무", "己":"기", "庚":"경", "辛":"신", "壬":"임", "癸":"계"}
-        zi_ko = {"子":"자", "丑":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "未":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
+        zi_ko = {"子":"자", "축":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "未":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
 
         def format_ganzi(ganzi_str):
             if not ganzi_str or len(ganzi_str) < 2: return "?", "?"
             gan, zi = ganzi_str[0], ganzi_str[1]
             return f"{gan}({gan_ko.get(gan, '')})", f"{zi}({zi_ko.get(zi, '')})"
 
-        # [원본 로직] 8글자 정밀 추출
+        # 시간 보정 로직 (원본 그대로)
         if birth_time == "모름":
             t_gan, t_zi = "?", "?"
             precise_eight_char = eight_char
@@ -84,13 +84,13 @@ if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=T
         st.divider()
         st.subheader(f"📊 {name}님의 사주 원국")
 
-        c_row1_1, c_row1_2 = st.columns(2)
-        with c_row1_1: st.info(f"### 시주\n{t_gan}\n\n{t_zi}")
-        with c_row1_2: st.info(f"### 일주\n{d_gan}\n\n{d_zi}")
+        c1, c2 = st.columns(2)
+        with c1: st.info(f"### 시주\n{t_gan}\n\n{t_zi}")
+        with c2: st.info(f"### 일주\n{d_gan}\n\n{d_zi}")
         
-        c_row2_1, c_row2_2 = st.columns(2)
-        with c_row2_1: st.info(f"### 월주\n{m_gan}\n\n{m_zi}")
-        with c_row2_2: st.info(f"### 년주\n{y_gan}\n\n{y_zi}")
+        c3, c4 = st.columns(2)
+        with c3: st.info(f"### 월주\n{m_gan}\n\n{m_zi}")
+        with c4: st.info(f"### 년주\n{y_gan}\n\n{y_zi}")
 
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
 
@@ -101,13 +101,4 @@ if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=T
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
             "巳": ["亥", "子", "丑"], "酉": ["亥", "子", "丑"], "丑": ["亥", "子", "丑"],
-            "亥": ["巳", "오", "未"], "卯": ["巳", "오", "未"], "未": ["巳", "오", "未"]
-        }
-        my_samjae_zis = samjae_groups.get(my_year_zi, [])
-        target_solar = Solar.fromYmd(target_year, 1, 1)
-        target_year_zi = target_solar.getLunar().getEightChar().getYear()[1]
-        
-        if target_year_zi in my_samjae_zis:
-            st.error(f"🚫 **삼재 정보: {target_year}년은 삼재 기간입니다.**")
-        else:
-            st.success(f"✅ **삼재 정보: {target_year}년은 삼재
+            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未
