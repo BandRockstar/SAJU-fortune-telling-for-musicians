@@ -2,21 +2,21 @@ import streamlit as st
 from lunar_python import Solar, Lunar
 
 # 1. 페이지 설정
-st.set_page_config(page_title="정통 사주 명리 분석", page_icon="☯️")
+st.set_page_config(page_title="정통 사주 명리 분석", page_icon="☯️", layout="centered")
 
 st.title("☯️ 정통 사주 명리 분석")
 
-# 2. 사주 정보 입력 섹션 (1층: 고정)
+# 2. 사주 정보 입력 섹션 (원본 유지)
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     name = st.text_input("성함", value="")
     
     col1, col2, col3 = st.columns(3)
     with col1:
-        year = st.number_input("출생년", 1900, 2026, value=2000)
+        year = st.number_input("출생년", 1900, 2026, value=1985)
     with col2:
-        month = st.number_input("출생월", 1, 12, value=1)
+        month = st.number_input("출생월", 1, 12, value=8)
     with col3:
-        day = st.number_input("출생일", 1, 31, value=1)
+        day = st.number_input("출생일", 1, 31, value=13)
 
     time_options = [
         "모름",
@@ -25,7 +25,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
         "11:30~13:30 오시 (午)", "13:30~15:30 미시 (未)", "15:30~17:30 신시 (申)",
         "17:30~19:30 유시 (酉)", "19:30~21:30 술시 (戌)", "21:30~23:30 해시 (亥)"
     ]
-    birth_time = st.selectbox("출생 시간", time_options, index=0)
+    birth_time = st.selectbox("출생 시간", time_options, index=11)
     
     calendar_type = st.radio("달력 선택", ["양력", "음력"], horizontal=True)
     
@@ -33,12 +33,13 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     if calendar_type == "음력":
         is_leap_month = st.checkbox("윤달인가요?")
 
-    target_year = st.number_input("운세를 보고 싶은 연도", min_value=2024, max_value=2100, value=2026)
+    target_year = st.number_input("운세를 보고 싶은 연도", min_value=1900, max_value=2100, value=2026)
     gender = st.radio("성별", ["남성", "여성"], horizontal=True)
 
 # 3. 분석 버튼 및 결과 출력
-if st.button("🎭 심층 이원 통변 리포트 생성"):
+if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=True):
     if name:
+        # [원본 로직] 날짜 객체 생성
         if calendar_type == "양력":
             date_obj = Solar.fromYmd(year, month, day)
             lunar_obj = date_obj.getLunar()
@@ -57,12 +58,10 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             gan, zi = ganzi_str[0], ganzi_str[1]
             return f"{gan}({gan_ko.get(gan, '')})", f"{zi}({zi_ko.get(zi, '')})"
 
-        y_gan, y_zi = format_ganzi(eight_char.getYear())
-        m_gan, m_zi = format_ganzi(eight_char.getMonth())
-        d_gan, d_zi = format_ganzi(eight_char.getDay())
-        
+        # [원본 로직] 정밀 사주 도출
         if birth_time == "모름":
             t_gan, t_zi = "?", "?"
+            precise_eight_char = eight_char
         else:
             selected_zi = birth_time.split("(")[1][0] 
             hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "未":14, "申":16, "酉":18, "戌":20, "亥":22}
@@ -77,30 +76,34 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             
             t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
 
-        # 2층: 사주 원국 출력 (고정)
-        st.divider()
-        st.subheader(f"📊 {name}님의 사주 원국 (8글자)")
+        y_gan, y_zi = format_ganzi(precise_eight_char.getYear())
+        m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())
+        d_gan, d_zi = format_ganzi(precise_eight_char.getDay())
 
-        col_t, col_d, col_m, col_y = st.columns(4)
-        with col_y:
-            st.markdown("### 년주")
-            st.info(f"{y_gan}\n\n{y_zi}")
-        with col_m:
-            st.markdown("### 월주")
-            st.info(f"{m_gan}\n\n{m_zi}")
-        with col_d:
-            st.markdown("### 일주")
-            st.info(f"{d_gan}\n\n{d_zi}")
-        with col_t:
-            st.markdown("### 시주")
-            st.info(f"{t_gan}\n\n{t_zi}")
+        # 2층: 사주 원국 출력 (모바일 최적화: 2x2 그리드)
+        st.divider()
+        st.subheader(f"📊 {name}님의 사주 원국")
+
+        # 시주, 일주를 윗줄에 배치
+        row1_col1, row1_col2 = st.columns(2)
+        with row1_col1:
+            st.info(f"### 시주\n{t_gan}\n\n{t_zi}")
+        with row1_col2:
+            st.info(f"### 일주\n{d_gan}\n\n{d_zi}")
+            
+        # 월주, 년주를 아랫줄에 배치
+        row2_col1, row2_col2 = st.columns(2)
+        with row2_col1:
+            st.info(f"### 월주\n{m_gan}\n\n{m_zi}")
+        with row2_col2:
+            st.info(f"### 년주\n{y_gan}\n\n{y_zi}")
 
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
         st.write(f"**분석 연도:** {target_year}년")
 
-        # 3층: 삼재 분석 (고정)
+        # 3층: 삼재 분석 (원본 로직 유지)
         st.divider()
-        my_year_zi = eight_char.getYear()[1]
+        my_year_zi = precise_eight_char.getYear()[1]
         samjae_groups = {
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
@@ -116,13 +119,13 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             samjae_idx = my_samjae_zis.index(target_year_zi)
             samjae_types = ["들삼재", "눌삼재", "날삼재"]
             current_status = samjae_types[samjae_idx]
-            st.error(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간({current_status})에 해당합니다.**{desc_text}")
+            st.error(f"🚫 **삼재 정보: {target_year}년은 {current_status}입니다.**{desc_text}")
         else:
-            st.success(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**{desc_text}")
+            st.success(f"✅ **삼재 정보: {target_year}년은 삼재가 아닙니다.**{desc_text}")
 
-        # --- [4층: 정통 명리 심층 통변] ---
+        # 4층: 정통 명리 심층 통변 (원본 로직 유지)
         st.divider()
-        st.subheader(f"📜 {name}님 사주 원국 정밀 분석 리포트")
+        st.subheader(f"📜 정밀 분석 리포트")
 
         gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
         zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
@@ -133,45 +136,4 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             if c in gan_elements: counts[gan_elements[c]] += 1
             elif c in zi_elements: counts[zi_elements[c]] += 1
 
-        my_day_gan = d_gan[0]
-        my_element = gan_elements.get(my_day_gan, "알수없음")
-        
-        # 오행 분포 표기 (모든 오행 0 포함)
-        col_res1, col_res2 = st.columns(2)
-        with col_res1:
-            st.write("**[오행 분포]**")
-            res_list = [f"{k}({counts[k]})" for k in ["木", "火", "土", "金", "水"]]
-            st.code(" | ".join(res_list))
-        with col_res2:
-            st.write("**[일간 속성]**")
-            st.code(f"{my_day_gan} ({my_element}의 기운)")
-
-        # [명리 분석 1: 오행의 세력과 성정]
-        max_ele = max(counts, key=counts.get)
-        part1 = f"{name}님의 사주 구성을 분석한 결과, 현재 {max_ele}의 기운이 {counts[max_ele]}개로 가장 강성한 세력을 형성하고 있습니다. "
-        if counts[max_ele] >= 3:
-            part1 += f"명리학적으로 특정 오행이 태과(太過)한 명조는 기질이 선명하고 주관이 뚜렷하여 자기 세계가 확고함을 의미합니다. 외부의 환경 변화에 휩쓸리기보다 자신의 신념과 원칙을 관철해 나가는 강인한 성정을 지녔습니다. "
-        else:
-            part1 += "오행의 분포가 전반적으로 중화(中和)를 이루고 있어 성품이 원만하고 매사에 균형 감각이 뛰어납니다. 편중되지 않은 시각으로 사물을 바라보며 주변 환경과 조화롭게 융화되는 유연한 기질을 갖추고 있습니다. "
-
-        # [명리 분석 2: 일간의 오상(五常)적 특성]
-        part2 = f"본신인 일간 {my_day_gan}은 {my_element}의 성질을 지니고 있습니다. "
-        if my_element == "木": part2 += "오상 중 인(仁)을 상징하며, 나무가 위로 뻗어 나가는 성질처럼 창의적인 기획력과 어질고 진취적인 마음을 품고 있습니다. "
-        elif my_element == "火": part2 += "오상 중 예(禮)를 상징하며, 불꽃이 주변을 밝히듯 열정적이고 자신을 드러내어 소통하려는 표현력이 강력한 기질입니다. "
-        elif my_element == "土": part2 += "오상 중 신(信)을 상징하며, 대지가 만물을 품듯 묵직하고 신의가 두터우며 매사에 신중하여 원칙을 변함없이 지켜나가는 중용의 덕이 있습니다. "
-        elif my_element == "金": part2 += "오상 중 의(義)를 상징하며, 금속의 날카로운 결단력처럼 시비지심이 분명하고 일 처리에 있어 완벽을 기하는 냉철한 성정입니다. "
-        else: part2 += "오상 중 지(智)를 상징하며, 물이 흐르듯 유연하고 지혜로우며 깊은 감수성과 영감을 바탕으로 내면의 통찰을 이뤄내는 명조입니다. "
-
-        # [명리 분석 3: 월지(사회궁)와의 관계]
-        part3 = f"사회적 환경과 격국을 결정짓는 월지의 {m_zi[0]}와 일간의 관계를 비추어 볼 때, {name}님은 "
-        # 간단한 비겁/식재관 분기 (정밀 로직의 기초)
-        if m_zi[0] in zi_elements and zi_elements[m_zi[0]] == my_element:
-            part3 += "비겁의 기운이 월지를 점하여 자아의 주체성이 대단히 강조되는 구조입니다. 독립적인 환경에서 본인의 역량을 발휘할 때 가장 큰 성과를 거두는 주체적 명조입니다. "
-        else:
-            part3 += "본인의 에너지를 외부의 목적이나 가치로 치환하는 능력이 발달하였습니다. 주어진 상황을 냉철하게 분석하고 이를 실무적인 결과물로 도출해내는 현실적 감각이 탁월합니다. "
-
-        st.info(part1 + "\n\n" + part2 + "\n\n" + part3)
-        # ---------------------------------------------------
-
-    else:
-        st.warning("성함을 입력해 주세요.")
+        my_day_gan =
