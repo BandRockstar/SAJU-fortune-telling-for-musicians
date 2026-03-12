@@ -18,8 +18,9 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     with col3:
         day = st.number_input("출생일", 1, 31, 7)
 
-    # --- 시간 선택 옵션 교체 부분 ---
+    # --- 시간 선택 옵션에 '모름' 추가 ---
     time_options = [
+        "모름",
         "23:30~01:30 자시 (子)",
         "01:30~03:30 축시 (丑)",
         "03:30~05:30 인시 (寅)",
@@ -33,7 +34,8 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
         "19:30~21:30 술시 (戌)",
         "21:30~23:30 해시 (亥)"
     ]
-    birth_time = st.selectbox("출생 시간", time_options, index=3)
+    # '모름'이 추가되었으므로, 기존 '묘시'를 기본값으로 유지하기 위해 index를 4로 변경합니다.
+    birth_time = st.selectbox("출생 시간", time_options, index=4)
     # ------------------------------
     
     # 양력/음력 선택 및 음력일 경우 윤달 체크박스 표시
@@ -67,6 +69,10 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         
         # 간지(사주) 출력
         st.success(f"**사주 팔자:** {eight_char.getYearInGanZi()}년 {eight_char.getMonthInGanZi()}월 {eight_char.getDayInGanZi()}일")
+        
+        # 시간이 '모름'일 때와 아닐 때의 안내 문구를 다르게 표시할 수 있습니다.
+        time_display = f"**출생 시간:** {birth_time}"
+        st.write(time_display)
         
         st.markdown(f"""
         ---
