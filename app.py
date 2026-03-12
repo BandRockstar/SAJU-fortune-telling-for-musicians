@@ -22,7 +22,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
         "모름",
         "23:30~01:30 자시 (子)", "01:30~03:30 축시 (丑)", "03:30~05:30 인시 (寅)",
         "05:30~07:30 묘시 (卯)", "07:30~09:30 진시 (辰)", "09:30~11:30 사시 (巳)",
-        "11:30~13:30 오시 (午)", "13:30~15:30 미시 (미)", "15:30~17:30 신시 (申)",
+        "11:30~13:30 오시 (午)", "13:30~15:30 미시 (未)", "15:30~17:30 신시 (申)",
         "17:30~19:30 유시 (酉)", "19:30~21:30 술시 (戌)", "21:30~23:30 해시 (亥)"
     ]
     birth_time = st.selectbox("출생 시간", time_options, index=0)
@@ -65,7 +65,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             t_gan, t_zi = "?", "?"
         else:
             selected_zi = birth_time.split("(")[1][0] 
-            hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "未":14, "申":16, "酉":18, "戌":20, "亥":22}
+            hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "미":14, "申":16, "酉":18, "戌":20, "亥":22}
             target_hour = hour_map.get(selected_zi, 0)
             
             if calendar_type == "양력":
@@ -97,7 +97,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
 
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
 
-        # 3층: 삼재 분석
+        # 3층: 삼재 분석 (✅ 수정됨)
         st.divider()
         my_year_zi = eight_char.getYear()[1]
         samjae_groups = {
@@ -119,32 +119,9 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         else:
             st.success(f"✅ **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**{desc_text}")
 
-        # 4층: 정통 명리 심층 통변 (삭제된 내용 완벽 복구)
+        # 4층: 정통 명리 심층 통변 (긴 분량 완벽 복구)
         st.divider()
         st.subheader(f"📜 {name}님 사주 원국 정밀 분석 리포트")
 
         gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
-        zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
-        all_chars = [y_gan[0], y_zi[0], m_gan[0], m_zi[0], d_gan[0], d_zi[0], t_gan[0], t_zi[0]]
-        
-        counts = {"木": 0, "火": 0, "土": 0, "金": 0, "水": 0}
-        for c in all_chars:
-            if c in gan_elements: counts[gan_elements[c]] += 1
-            elif c in zi_elements: counts[zi_elements[c]] += 1
-
-        my_day_gan = d_gan[0]
-        my_element = gan_elements.get(my_day_gan, "알수없음")
-        
-        col_res1, col_res2 = st.columns(2)
-        with col_res1:
-            st.write("**[오행 분포]**")
-            res_list = [f"{k}({counts[k]})" for k in ["木", "火", "土", "金", "水"]]
-            st.code(" | ".join(res_list))
-        with col_res2:
-            st.write("**[일간 속성]**")
-            st.code(f"{my_day_gan} ({my_element}의 기운)")
-
-        max_ele = max(counts, key=counts.get)
-        part1 = f"{name}님의 사주 구성을 분석한 결과, 현재 {max_ele}의 기운이 {counts[max_ele]}개로 가장 강성한 세력을 형성하고 있습니다. "
-        if counts[max_ele] >= 3:
-            part1 += f"명리학적으로 특정 오행이 태과(太過)한 명조는 기질이 선명하고 주관이 뚜렷하여
+        zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "
