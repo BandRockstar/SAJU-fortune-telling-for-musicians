@@ -65,7 +65,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             t_gan, t_zi = "?", "?"
         else:
             selected_zi = birth_time.split("(")[1][0] 
-            hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "미":14, "申":16, "酉":18, "戌":20, "亥":22}
+            hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "未":14, "申":16, "酉":18, "戌":20, "亥":22}
             target_hour = hour_map.get(selected_zi, 0)
             
             if calendar_type == "양력":
@@ -97,11 +97,10 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
         st.write(f"**분석 연도:** {target_year}년")
 
-        # --- [3층: 삼재 분석] 이미지 스타일 반영 ---
+        # --- [3층: 삼재 분석] 이미지와 동일하게 구현 ---
         st.divider()
         
         my_year_zi = eight_char.getYear()[1]
-        
         samjae_groups = {
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
@@ -114,16 +113,16 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         target_year_zi = target_solar.getLunar().getEightChar().getYear()[1]
 
         if target_year_zi in my_samjae_zis:
-            # 삼재 기간일 때 (적색 박스 스타일)
+            # 삼재 기간일 때: 적색 박스 (이미지의 구조를 따름)
             samjae_idx = my_samjae_zis.index(target_year_zi)
             samjae_types = ["들삼재", "눌삼재", "날삼재"]
             current_status = samjae_types[samjae_idx]
             
-            st.error(f"🚫 삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간({current_status})에 해당합니다.")
+            st.error(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간({current_status})에 해당합니다.**")
             st.write("삼재는 9년마다 돌아오는 3년의 조심하는 시기를 뜻합니다.")
         else:
-            # 삼재 기간이 아닐 때 (녹색 박스 스타일)
-            st.success(f"✅ 삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.")
+            # 삼재 기간이 아닐 때: 녹색 박스 (이미지와 100% 동일한 텍스트)
+            st.success(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**")
             st.write("삼재는 9년마다 돌아오는 3년의 조심하는 시기를 뜻합니다.")
         # ------------------------------------------
 
