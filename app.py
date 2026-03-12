@@ -73,66 +73,7 @@ def get_samjae_status(year_ganzhi, target_year):
         return f"현재 {target_year}년은 귀하의 **{status}** 기간입니다.", "samjae-active"
     return f"{target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.", "samjae-inactive"
 
-# 4️⃣ 초장문 통변 엔진
+# 4️⃣ 초장문 통변 엔진 (300자 이상)
 def get_ultra_report(d_gan, max_elem, name):
     gen_data = {
-        '목': f"본인은 {d_gan}의 정기를 타고나 만물을 소생시키는 생명력과 따뜻한 인정을 지닌 성품을 소유하고 있습니다...",
-        '화': f"본인은 {d_gan}의 정기를 받아 태양처럼 뜨겁고 화려하며...",
-        '토': f"본인은 {d_gan}의 기운을 품어 드넓은 대지처럼 모든 것을 수용하고...",
-        '금': f"본인은 {d_gan}의 기운을 받아 단단한 바위나 정제된 금속처럼...",
-        '수': f"본인은 {d_gan}의 성정을 타고나 깊은 샘물이나 유유히 흐르는 강물처럼..."
-    }
-    # (내용 중략 - 기존 코드와 동일한 데이터가 들어갑니다)
-    mus_data = {
-        '목': f"{name}님의 음악 세계는 서사적인 선율과 따뜻한 리듬감이...",
-        '화': f"{name}님의 음악은 무대 위에서 폭발하는 압도적인 카리스마와...",
-        '토': f"{name}님의 음악적 기반은 사운드의 완벽한 밸런스와 안정적인 구조미...",
-        '금': f"{name}님의 연주는 차가운 금속처럼 명징한 사운드와...",
-        '수': f"{name}님의 음악적 지평은 현실을 넘어 몽환적이면서도..."
-    }
-    return gen_data.get(max_elem, ""), mus_data.get(max_elem, "")
-
-# 5️⃣ 결과 출력
-if submitted:
-    if not (y and m and d) or h_str == "시간 선택 (또는 모름)":
-        st.error("생년월일과 시간을 정확히 입력해주세요.")
-    else:
-        h_val = hour_time_map[h_str]
-        calc_h = 12 if h_val == "unknown" else h_val
-        lunar = Solar.fromYmdHms(int(y), int(m), int(d), calc_h, 0, 0).getLunar() if cal_type == "양력" else Lunar.fromYmdHms(int(y), (int(m) * -1) if is_leap else int(m), int(d), calc_h, 0, 0)
-        ba_zi = [lunar.getYearInGanZhi(), lunar.getMonthInGanZhi(), lunar.getDayInGanZhi(), "?" if h_val == "unknown" else lunar.getTimeInGanZhi()]
-        d_gan = lunar.getDayGan()
-        
-        ohaeng_map = {'목': '甲乙寅卯', '화': '丙丁巳午', '토': '戊己辰戌丑未', '금': '庚辛申酉', '수': '壬癸亥子'}
-        count_target = "".join(ba_zi[:3]) if h_val == "unknown" else "".join(ba_zi)
-        counts = {k: sum(1 for c in count_target if c in v) for k, v in ohaeng_map.items()}
-        max_elem = max(counts, key=counts.get)
-        
-        display_name = user_name if user_name else "아티스트"
-        gen_text, mus_text = get_ultra_report(d_gan, max_elem, display_name)
-        samjae_msg, samjae_class = get_samjae_status(ba_zi[0], target_y)
-
-        st.markdown(f"### 🍀 {display_name}님의 심층 리포트")
-        st.markdown("<div class='saju-grid'>" + "".join([f"<div class='saju-box'><small>{l}</small><br>{v}</div>" for l, v in zip(['년주','월주','일주','시주'], ba_zi)]) + "</div>", unsafe_allow_html=True)
-        st.markdown("<div class='ohaeng-grid'>" + "".join([f"<div class='ohaeng-item'><small>{k}</small><br><b>{v}자</b></div>" for k,v in counts.items()]) + "</div>", unsafe_allow_html=True)
-
-        st.markdown(f"<div class='{samjae_class}'><b>🚫 삼재(三災) 정보: {samjae_msg}</b><br><small>삼재는 9년마다 돌아오는 3년의 조심하는 시기를 뜻합니다.</small></div>", unsafe_allow_html=True)
-
-        st.markdown(f"<div class='section-card'><h2>👤 타고난 성정과 일반 통변</h2><div class='content-text'>{gen_text}</div></div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='music-card'><h2>🎸 타고난 음악적 사주 통변</h2><div class='content-text'>{mus_text}</div></div>", unsafe_allow_html=True)
-
-        st.markdown(f"""
-        <div class='position-card'>
-            <h2>✨ 추천 음악 포지션 및 전문 재능</h2>
-            <div class='content-text'>
-                <span class='pos-title'>🎤 리드 보컬 및 기타리스트 (Frontman)</span>
-                귀하의 명식에서 가장 빛나는 음악적 포지션은 화(火)의 폭발적인 에너지와 금(金)의 날카로운 정밀함이 교차하는 지점인 '리드 보컬 겸 리드 기타리스트'입니다. 
-                <br><br>
-                <span class='pos-title'>🎚️ 사운드 메이킹 및 엔지니어링</span>
-                사주 내에 두드러지는 금(金)의 기운은 소리를 단순히 감상하는 단계를 넘어, 소리의 질감을 미세하게 깎고 다듬어 최상의 결과물을 도출해내는 '사운드 조각가'로서의 재능을 부여합니다. 
-                <br><br>
-                <span class='pos-title'>🎯 음악적 성향: 완벽주의적 표현</span>
-                예술적 자아에 있어서 귀하는 타협을 거부하는 확고한 주관과 디테일한 부분까지 집요하게 파고드는 완벽주의적 성향을 지니고 있습니다. 
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        '목': f"본인은 {d_gan}의 정기를 타고나 만물을 소생시키는 생명력과 따뜻한 인정을 지닌 성품을 소유하고 있습니다. {max_elem}의 기운이 발달한 명식은 명예를 중시하며, 어떠한 고난 속에서도 굴하지 않고 하늘로 뻗어가는 나무처럼 올곧은 신념을 지키는 강직함이 돋보입니다. 타인에게는 자상하고 배려심이 깊어 주변에 사람이 모여드는 편이나, 본인의 내면에는 자신만의 원칙을 고수하려는 고집과 독립심이 강하게 자리 잡고 있습니다. 이러한 성향은 사회생활에서 신뢰받는 리더의 모습으로 나타나며, 명분과 실리를 동시에 추구하는 균형 잡힌 가치관을 통해 인생의 후반부로 갈수록 더욱 견고한 성공의 기틀을
