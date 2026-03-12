@@ -25,7 +25,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
         "11:30~13:30 오시 (午)", "13:30~15:30 미시 (未)", "15:30~17:30 신시 (申)",
         "17:30~19:30 유시 (酉)", "19:30~21:30 술시 (戌)", "21:30~23:30 해시 (亥)"
     ]
-    birth_time = st.selectbox("출생 시간", time_options, index=4) # 묘시 기본값
+    birth_time = st.selectbox("출생 시간", time_options, index=4)
     
     calendar_type = st.radio("달력 선택", ["양력", "음력"], horizontal=True)
     
@@ -94,7 +94,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=T
 
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
 
-        # 3층: 삼재 분석 (문자열 닫기 오류 해결)
+        # 3층: 삼재 분석 (문자열 및 괄호 완벽 검수)
         st.divider()
         my_year_zi = precise_eight_char.getYear()[1]
         samjae_groups = {
@@ -106,4 +106,28 @@ if st.button("🎭 심층 이원 통변 리포트 생성", use_container_width=T
         my_samjae_zis = samjae_groups.get(my_year_zi, [])
         target_solar = Solar.fromYmd(target_year, 1, 1)
         target_year_zi = target_solar.getLunar().getEightChar().getYear()[1]
-        desc_text = "\n\n삼재는 9년마다 돌아오는 3년의 조심
+        desc_text = "삼재는 9년마다 돌아오는 3년의 조심하는 시기를 뜻합니다."
+
+        if target_year_zi in my_samjae_zis:
+            samjae_idx = my_samjae_zis.index(target_year_zi)
+            samjae_types = ["들삼재", "눌삼재", "날삼재"]
+            current_status = samjae_types[samjae_idx]
+            st.error(f"🚫 **삼재 정보: {target_year}년은 {current_status} 기간입니다.**\n\n{desc_text}")
+        else:
+            st.success(f"✅ **삼재 정보: {target_year}년은 삼재에 해당하지 않습니다.**\n\n{desc_text}")
+
+        # 4층: 정통 명리 심층 통변
+        st.divider()
+        st.subheader("📜 정밀 분석 리포트")
+
+        gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
+        zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
+        all_chars = [y_gan[0], y_zi[0], m_gan[0], m_zi[0], d_gan[0], d_zi[0], t_gan[0], t_zi[0]]
+        
+        counts = {"木": 0, "火": 0, "土": 0, "金": 0, "水": 0}
+        for c in all_chars:
+            if c in gan_elements: counts[gan_elements[c]] += 1
+            elif c in zi_elements: counts[zi_elements[c]] += 1
+
+        my_day_gan = d_gan[0]
+        my_element = gan_elements.get(my_day_gan, "알수없음")
