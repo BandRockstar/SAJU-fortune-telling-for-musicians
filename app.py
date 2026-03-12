@@ -44,10 +44,9 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     target_year = st.number_input("운세를 보고 싶은 연도", min_value=2024, max_value=2100, value=2026)
     gender = st.radio("성별", ["남성", "여성"], horizontal=True)
 
-# 3. 분석 버튼 및 결과 출력 (오류 수정 버전)
+# 3. 분석 버튼 및 결과 출력 (메시지 삭제 버전)
 if st.button("🎭 심층 이원 통변 리포트 생성"):
     if name:
-        # 날짜 객체 생성
         if calendar_type == "양력":
             date_obj = Solar.fromYmd(year, month, day)
             lunar_obj = date_obj.getLunar()
@@ -56,10 +55,8 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             lunar_obj = Lunar.fromYmd(year, month, day)
             display_text = f"음력 {year}년 {month}월 {day}일" + (" (윤달)" if is_leap_month else " (평달)")
 
-        # 사주 팔자 데이터 추출 (라이브러리 메서드에 맞게 수정)
         eight_char = lunar_obj.getEightChar()
         
-        # 간지(한자+한글) 추출을 위한 내부 함수
         def format_ganzi(ganzi_str):
             if not ganzi_str or len(ganzi_str) < 2:
                 return "?", "?"
@@ -68,7 +65,6 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             zi_ko = {"子":"자", "丑":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "未":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
             return f"{gan}({gan_ko.get(gan, '')})", f"{zi}({zi_ko.get(zi, '')})"
 
-        # 각 기둥 정보 가져오기 (수정된 메서드 사용)
         y_gan, y_zi = format_ganzi(eight_char.getYear())
         m_gan, m_zi = format_ganzi(eight_char.getMonth())
         d_gan, d_zi = format_ganzi(eight_char.getDay())
@@ -81,8 +77,6 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         st.divider()
         st.subheader(f"📊 {name}님의 사주 원국 (8글자)")
 
-        # 전통 방식: 우측에서 좌측으로 배치 (년 | 월 | 일 | 시 순서로 columns 생성하되 시각적 배치는 반대로)
-        # Streamlit 컬럼은 왼쪽부터 생성되므로 시주가 맨 왼쪽(전통 방식의 끝)에 오도록 배치합니다.
         col_t, col_d, col_m, col_y = st.columns(4)
         
         with col_y:
@@ -100,12 +94,8 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
 
         st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
         st.write(f"**분석 연도:** {target_year}년")
-
-        st.markdown(f"""
-        ---
-        ### 🎹 음악적 메시지
-        * **{gender}** 아티스트로서 {name}님은 {target_year}년에 새로운 음악적 영감을 마주하게 될 것입니다.
-        * 분석하신 **{eight_char.getDay()}**의 기운을 바탕으로 맞춤형 리포트가 생성되었습니다.
-        """)
+        
+        # --- 음악적 메시지 코드가 삭제된 지점입니다 ---
+        
     else:
         st.warning("성함을 입력해 주세요.")
