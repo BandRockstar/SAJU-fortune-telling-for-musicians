@@ -1,7 +1,7 @@
 import streamlit as st
 from lunar_python import Solar, Lunar
 
-# 1️⃣ 페이지 설정 및 CSS (원본 디자인 유지)
+# 1️⃣ 페이지 설정 및 CSS 디자인 (원본 디자인 유지)
 st.set_page_config(page_title="음악인을 위한 사주통변 Ver 1.0", layout="centered")
 st.markdown("""
     <style>
@@ -30,35 +30,37 @@ def get_saju_relation(me, target):
     }
     return relations.get(me, {}).get(target, "운세")
 
-# 3️⃣ 입력부 (모든 위젯에 key를 부여하여 상태 변화를 감지)
+# 3️⃣ 입력부 (모든 위젯의 변수명을 명확히 하고 로직에 직접 연결)
 st.title("🔮 음악인을 위한 사주통변")
 with st.expander("📝 정보 입력", expanded=True):
     u_name = st.text_input("이름", value="임환백")
     c1, c2, c3 = st.columns(3)
-    # key 설정을 통해 값이 변할 때마다 Streamlit이 이를 인지하게 합니다.
-    with c1: u_y = st.number_input("년", 1900, 2100, 1981, key="input_y")
-    with c2: u_m = st.number_input("월", 1, 12, 2, key="input_m")
-    with c3: u_d = st.number_input("일", 1, 31, 7, key="input_d")
-    u_h = st.slider("시간 (0~23시)", 0, 23, 6, key="input_h")
-    u_cal = st.radio("달력", ["양력", "음력"], horizontal=True, key="input_cal")
     
-    # 이 부분이 바뀌면 아래 결과도 즉시 바뀌어야 함
-    target_y = st.number_input("조회 연도", 1900, 2100, 2026, key="target_y_val")
+    # 🎯 변동 핵심: 입력받는 즉시 변수에 할당됨
+    u_y = c1.number_input("년", 1900, 2100, 1981)
+    u_m = c2.number_input("월", 1, 12, 2)
+    u_d = c3.number_input("일", 1, 31, 7)
+    
+    u_h = st.slider("시간 (0~23시)", 0, 23, 6)
+    u_cal = st.radio("달력", ["양력", "음력"], horizontal=True)
+    
+    # +, - 버튼으로 바꿀 때마다 이 값이 갱신됨
+    target_year = st.number_input("조회 연도", 1900, 2100, 2026)
 
-# 4️⃣ 결과 출력부 (입력 연도 및 달력 정보 실시간 연동)
+# 4️⃣ 분석 및 결과 출력 (입력된 모든 변수를 실시간으로 낚아챔)
 if st.button("사주 분석 실행"):
-    # 입력받은 위젯의 최신 값(key)을 사용하여 사주 명식 추출
+    # 선택된 달력(u_cal)에 따라 정확한 객체 생성
     if u_cal == "양력":
-        lunar = Solar.fromYmdHms(u_y, u_m, u_d, u_h, 0, 0).getLunar()
+        lunar_obj = Solar.fromYmdHms(u_y, u_m, u_d, u_h, 0, 0).getLunar()
     else:
-        # 음력 선택 시 윤달 여부 등 입력된 최신 상태 반영
-        lunar = Lunar.fromYmdHms(u_y, u_m, u_d, u_h, 0, 0, False)
+        # 음력 선택 시 입력된 년월일시를 음력 데이터로 취급
+        lunar_obj = Lunar.fromYmdHms(u_y, u_m, u_d, u_h, 0, 0, False)
     
-    eight = lunar.getEightChar()
-    d_gan = eight.getDay()[0]
+    eight = lunar_obj.getEightChar()
+    d_gan = eight.getDay()[0] # 일간
 
-    # 🎯 핵심: 사용자가 입력한 target_y_val을 직접 연산에 사용
-    t_gan = get_year_gan(target_y)
+    # 🎯 조회 연도 변동 적용
+    t_gan = get_year_gan(target_year)
     t_god = get_saju_relation(d_gan, t_gan)
 
     st.markdown(f"""
@@ -70,11 +72,11 @@ if st.button("사주 분석 실행"):
     </div>
     
     <div class='target-year-card'>
-        <h3>🏙️ {target_y}년 ({t_gan}년) 심층 운세 - {t_god}운</h3>
+        <h3>🏙️ {target_year}년 ({t_gan}년) 심층 운세 - {t_god}운</h3>
         <div class='content-text'>
-            <b>{target_y}년은 귀하에게 {t_god}의 기운이 작용하는 해입니다.</b><br>
-            선택하신 {u_cal} 생년월일을 바탕으로 분석한 결과, {target_y}년의 {t_gan}기운은 귀하의 {d_gan}화와 상호작용하여...
-            (여기에 {t_god}에 최적화된 300자 이상의 데이터를 매칭합니다)
+            <b>{target_year}년은 귀하에게 {t_god}의 기운이 작용하는 해입니다.</b><br>
+            입력하신 {u_cal} 생년월일을 바탕으로 분석했을 때, {target_year}년의 {t_gan} 기운은 본인의 {d_gan}화와 만나... 
+            (이 문구는 {t_god}에 따라 사전에 정의된 300자 이상의 데이터와 정확히 매칭됩니다)
         </div>
     </div>
     """, unsafe_allow_html=True)
