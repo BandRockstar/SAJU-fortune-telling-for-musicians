@@ -1,7 +1,25 @@
 import streamlit as st
 from lunar_python import Solar, Lunar
 from datetime import datetime
+import os
 
+# --- 사용 횟수 관리 함수 (최상단 정의) ---
+def get_visit_count():
+    filename = "visit_count.txt"
+    if not os.path.exists(filename):
+        with open(filename, "w") as f: f.write("0")
+    with open(filename, "r") as f:
+        try: return int(f.read().strip())
+        except: return 0
+
+def increment_visit_count():
+    filename = "visit_count.txt"
+    count = get_visit_count() + 1
+    with open(filename, "w") as f: f.write(str(count))
+    return count
+
+# 사이드바에 현재 누적 횟수 미리 표시
+st.sidebar.markdown(f"### 📊 누적 분석 횟수: `{get_visit_count()}`회")
 # 1. 페이지 설정 (모바일 최적화 레이아웃)
 st.set_page_config(
     page_title="밴드맨을 위한 사주통변", 
