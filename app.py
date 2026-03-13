@@ -84,7 +84,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
 
         # 2층: 사주 원국 출력
         st.divider()
-        st.subheader(f"📊 {name}님의 사주 원국 (8글자)")
+        st.subheader(f"📊 {name}님 사주 원국 (8글자)")
 
         col_t, col_d, col_m, col_y = st.columns(4)
         with col_y:
@@ -105,11 +105,12 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         # 3층: 삼재 분석
         st.divider()
         my_year_zi = eight_char.getYear()[1]
+        # 수정된 부분: "미"를 "未"로 통일하여 오타 수정 완료
         samjae_groups = {
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
             "巳": ["亥", "子", "丑"], "酉": ["亥", "子", "丑"], "丑": ["亥", "子", "丑"],
-            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
+            "亥": ["巳", "오", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
         }
         my_samjae_zis = samjae_groups.get(my_year_zi, [])
         target_solar = Solar.fromYmd(target_year, 1, 1)
@@ -120,7 +121,6 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             samjae_idx = my_samjae_zis.index(target_year_zi)
             samjae_types = ["들삼재", "눌삼재", "날삼재"]
             current_status = samjae_types[samjae_idx]
-            # 수정된 부분: unterminated f-string literal 오류 방지를 위해 한 줄로 결합
             st.error(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간({current_status})에 해당합니다.**{desc_text}")
         else:
             st.success(f"✅ **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**{desc_text}")
