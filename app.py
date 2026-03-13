@@ -44,7 +44,8 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             lunar_obj = date_obj.getLunar()
             display_text = f"양력 {year}년 {month}월 {day}일"
         else:
-            lunar_obj = Lunar.fromYmd(year, month, day)
+            # 수정된 부분: Lunar.fromYmd에 is_leap_month 인자 대입
+            lunar_obj = Lunar.fromYmd(year, month, day, is_leap_month)
             display_text = f"음력 {year}년 {month}월 {day}일" + (" (윤달)" if is_leap_month else " (평달)")
 
         eight_char = lunar_obj.getEightChar()
@@ -72,7 +73,8 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
                 precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 0, 0)
                 precise_eight_char = precise_solar.getLunar().getEightChar()
             else:
-                precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 0, 0)
+                # 수정된 부분: Lunar.fromYmdHms에 is_leap_month 인자 대입
+                precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 0, 0, is_leap_month)
                 precise_eight_char = precise_lunar.getEightChar()
             
             t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
