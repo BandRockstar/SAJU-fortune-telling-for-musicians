@@ -1,5 +1,6 @@
 import streamlit as st
 from lunar_python import Solar, Lunar
+from datetime import datetime
 
 # 1. 페이지 설정 (모바일 최적화 레이아웃)
 st.set_page_config(
