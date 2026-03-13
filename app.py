@@ -3,7 +3,7 @@ from lunar_python import Solar, Lunar
 
 # 1. 페이지 설정 (모바일 최적화 레이아웃)
 st.set_page_config(
-    page_title="음악인사주풀이", 
+    page_title="사주&음악", 
     page_icon="☯️",
     layout="centered"
 )
@@ -62,7 +62,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("☯️ 음악인사주풀이")
+st.title("☯️ 사주&음악")
 
 # 2. 사주 정보 입력 섹션 (기존 코드 유지)
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
