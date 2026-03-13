@@ -37,7 +37,7 @@ st.markdown("""
 
 st.title("☯️ 정통 사주 명리 분석")
 
-# 2. 사주 정보 입력 섹션
+# 2. 사주 정보 입력 섹션 (2026-2080 세운 입력 포함)
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     name = st.text_input("성함", value="")
     
@@ -64,13 +64,14 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     if calendar_type == "음력":
         is_leap_month = st.checkbox("윤달인가요?")
 
-    # 세운 분석 연도 설정 (2026~2080)
+    # 지시사항: 보고 싶은 년도 추가 (2026~2080)
     target_year = st.number_input("운세를 보고 싶은 연도", min_value=2026, max_value=2080, value=2026)
     gender = st.radio("성별", ["남성", "여성"], horizontal=True)
 
 # 3. 분석 및 결과 도출
 if st.button("🎭 심층 이원 통변 리포트 생성"):
     if name:
+        # 데이터 계산 (기존 오류 없는 로직)
         if calendar_type == "양력":
             date_obj = Solar.fromYmd(year, month, day)
             lunar_obj = date_obj.getLunar()
@@ -107,50 +108,4 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
                 precise_eight_char = precise_solar.getLunar().getEightChar()
             else:
                 precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, is_leap_month)
-                precise_eight_char = precise_lunar.getEightChar()
-            t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
-
-        st.divider()
-        st.subheader(f"📊 {name}님 사주 원국")
-        col_t, col_d, col_m, col_y = st.columns(4)
-        with col_y: st.info(f"년주\n{y_gan}\n{y_zi}")
-        with col_m: st.info(f"월주\n{m_gan}\n{m_zi}")
-        with col_d: st.info(f"일주\n{d_gan}\n{d_zi}")
-        with col_t: st.info(f"시주\n{t_gan}\n{t_zi}")
-        st.write(f"**정보:** {display_text} | {gender}")
-
-        # 삼재 분석 (target_year 기준)
-        st.divider()
-        my_year_zi = eight_char.getYear()[1]
-        samjae_groups = {
-            "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
-            "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
-            "巳": ["亥", "子", "丑"], "酉": ["亥", "子", "丑"], "丑": ["亥", "子", "丑"],
-            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
-        }
-        my_samjae_zis = samjae_groups.get(my_year_zi, [])
-        t_solar_check = Solar.fromYmd(target_year, 1, 1)
-        t_zi_check = t_solar_check.getLunar().getEightChar().getYear()[1]
-        
-        if t_zi_check in my_samjae_zis:
-            st.error(f"🚫 삼재 알림: {target_year}년은 귀하의 삼재 기간에 해당합니다. 매사에 신중을 기하십시오.")
-        else:
-            st.success(f"✅ 삼재 알림: {target_year}년은 삼재에 해당하지 않는 평온한 해입니다.")
-
-        # 심층 통변 섹션
-        st.divider()
-        st.subheader(f"📜 {name}님 심층 통변 리포트")
-        gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
-        zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
-        
-        my_day_gan = d_gan[0]
-        my_element = gan_elements.get(my_day_gan, "火")
-
-        # 📅 [신규 추가] 2026~2080 세운 분석 엔진
-        st.markdown(f'<div class="section-header">📅 {target_year}년도 명리학적 세운(歲運) 분석</div>', unsafe_allow_html=True)
-        
-        t_solar = Solar.fromYmd(target_year, 1, 1)
-        t_lunar = t_solar.getLunar()
-        t_ganzi = t_lunar.getEightChar().getYear()
-        t_gan, t_zi = t_ganzi[0], t_ganzi[1]
-        t_gan_ele = gan_elements.get(t
+                precise_eight_char = precise_lunar
