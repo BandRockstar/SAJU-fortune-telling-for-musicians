@@ -117,9 +117,8 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
 if st.button("🎭 심층 이원 통변 리포트 생성"):
     if st.button("🎭 심층 이원 통변 리포트 생성"):
     if name:
-        current_count = increment_visit_count()  # <--- 이 줄만 추가!
-        
-        # (기존의 사주 분석 코드들이 여기 나옵니다...)
+        current_count = increment_visit_count()
+        st.sidebar.write(f"현재 누적 분석: {current_count}회")
         st.write(f"🎉 현재까지 총 {current_count}번째 분석이 진행되었습니다.")
     if name:
         # 데이터 계산부 (기존 로직 유지)
