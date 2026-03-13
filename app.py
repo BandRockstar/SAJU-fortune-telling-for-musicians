@@ -62,7 +62,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("☯️ 밴드맨을 위한 사주통변")
+st.title("☯️ 음악인 사주풀이")
 
 # 2. 사주 정보 입력 섹션 (기존 코드 유지)
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
