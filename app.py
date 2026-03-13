@@ -49,6 +49,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
 
         eight_char = lunar_obj.getEightChar()
         
+        # 수정된 부분: "병":"병" 오타를 "丙":"병"으로 수정
         gan_ko = {"甲":"갑", "乙":"을", "丙":"병", "丁":"정", "戊":"무", "己":"기", "庚":"경", "辛":"신", "壬":"임", "癸":"계"}
         zi_ko = {"子":"자", "丑":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "未":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
 
@@ -64,10 +65,9 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         if birth_time == "모름":
             t_gan, t_zi = "?", "?"
         else:
-            # 수정된 부분: 더 안전하고 확실하게 한자 지(支)를 추출하여 결과 도출 오류 해결
             selected_zi = ""
             for char in birth_time:
-                if char in zi_ko: # zi_ko에 정의된 한자(子~亥)가 문자열에 있으면 추출
+                if char in zi_ko:
                     selected_zi = char
                     break
 
@@ -110,7 +110,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
             "巳": ["亥", "子", "丑"], "酉": ["亥", "子", "丑"], "丑": ["亥", "子", "丑"],
-            "亥": ["巳", "午", "미"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
+            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
         }
         my_samjae_zis = samjae_groups.get(my_year_zi, [])
         target_solar = Solar.fromYmd(target_year, 1, 1)
@@ -121,44 +121,4 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             samjae_idx = my_samjae_zis.index(target_year_zi)
             samjae_types = ["들삼재", "눌삼재", "날삼재"]
             current_status = samjae_types[samjae_idx]
-            st.error(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간({current_status})에 해당합니다.**{desc_text}")
-        else:
-            st.success(f"✅ **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**{desc_text}")
-
-        # 4층: 정통 명리 심층 통변
-        st.divider()
-        st.subheader(f"📜 {name}님 사주 원국 정밀 분석 리포트")
-
-        gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
-        zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
-        all_chars = [y_gan[0], y_zi[0], m_gan[0], m_zi[0], d_gan[0], d_zi[0], t_gan[0], t_zi[0]]
-        
-        counts = {"木": 0, "火": 0, "土": 0, "金": 0, "水": 0}
-        for c in all_chars:
-            if c in gan_elements: counts[gan_elements[c]] += 1
-            elif c in zi_elements: counts[zi_elements[c]] += 1
-
-        my_day_gan = d_gan[0]
-        my_element = gan_elements.get(my_day_gan, "알수없음")
-        
-        col_res1, col_res2 = st.columns(2)
-        with col_res1:
-            st.write("**[오행 분포]**")
-            res_list = [f"{k}({counts[k]})" for k in ["木", "火", "土", "金", "水"]]
-            st.code(" | ".join(res_list))
-        with col_res2:
-            st.write("**[일간 속성]**")
-            st.code(f"{my_day_gan} ({my_element}의 기운)")
-
-        max_ele = max(counts, key=counts.get)
-        part1 = f"{name}님의 사주 구성을 분석한 결과, 현재 {max_ele}의 기운이 {counts[max_ele]}개로 가장 강성한 세력을 형성하고 있습니다. "
-        if counts[max_ele] >= 3:
-            part1 += "명리학적으로 특정 오행이 태과(太過)한 명조는 기질이 선명하고 주관이 뚜렷하여 자기 세계가 확고함을 의미합니다. 외부의 환경 변화에 휩쓸리기보다 자신의 신념과 원칙을 관철해 나가는 강인한 성정을 지녔습니다. "
-        else:
-            part1 += "오행의 분포가 전반적으로 중화(中和)를 이루고 있어 성품이 원만하고 매사에 균형 감각이 뛰어납니다. 편중되지 않은 시각으로 사물을 바라보며 주변 환경과 조화롭게 융화되는 유연한 기질을 갖추고 있습니다. "
-
-        part2 = f"본신인 일간 {my_day_gan}은 {my_element}의 성질을 지니고 있습니다. "
-        if my_element == "木": part2 += "오상 중 인(仁)을 상징하며, 나무가 위로 뻗어 나가는 성질처럼 창의적인 기획력과 어질고 진취적인 마음을 품고 있습니다. "
-        elif my_element == "火": part2 += "오상 중 예(禮)를 상징하며, 불꽃이 주변을 밝히듯 열정적이고 자신을 드러내어 소통하려는 표현력이 강력한 기질입니다. "
-        elif my_element == "土": part2 += "오상 중 신(信)을 상징하며, 대지가 만물을 품듯 묵직하고 신의가 두터우며 매사에 신중하여 원칙을 변함없이 지켜나가는 중용의 덕이 있습니다. "
-        elif my_element == "金": part2 += "오상 중 의(義)를 상징하며, 금속의 날카로운 결단력처럼 시비지심이 분명하고 일 처리에 있어 완벽을 기하는 냉철한 성
+            st.error(f"🚫
