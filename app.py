@@ -321,9 +321,13 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         today_lunar = Solar.fromYmd(now_dt.year, now_dt.month, now_dt.day).getLunar()
         today_ganzi = today_lunar.getEightChar().getDay()
         
+        my_day_gan = d_gan[0]
+        my_element = gan_elements.get(my_day_gan, "木")
+
         if len(today_ganzi) >= 2:
             n_tg, n_tz = today_ganzi[0], today_ganzi[1]
             n_ele = gan_elements.get(n_tg, "木")
+            # 내 오행(my_element)과 오늘 오행(n_ele)의 차이를 실시간 계산
             d_diff = (ele_order.index(n_ele) - ele_order.index(my_element)) % 5
             
             # 100자 이상의 풍성한 해설 데이터베이스
