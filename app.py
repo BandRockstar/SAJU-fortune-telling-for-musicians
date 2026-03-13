@@ -116,7 +116,7 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
 # 3. 분석 버튼 및 결과 도출 (로직 수정 절대 없음)
 if st.button("🎭 심층 이원 통변 리포트 생성"):
     if st.button("🎭 심층 이원 통변 리포트 생성"):
-    if name:
+        if name:
         # ✅ 바로 여기에 2단계 코드를 넣으세요!
         current_count = increment_visit_count() 
         
