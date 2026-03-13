@@ -44,14 +44,13 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             lunar_obj = date_obj.getLunar()
             display_text = f"양력 {year}년 {month}월 {day}일"
         else:
-            # 수정된 부분: Lunar.fromYmd에 is_leap_month 인자 대입
             lunar_obj = Lunar.fromYmd(year, month, day, is_leap_month)
             display_text = f"음력 {year}년 {month}월 {day}일" + (" (윤달)" if is_leap_month else " (평달)")
 
         eight_char = lunar_obj.getEightChar()
         
         gan_ko = {"甲":"갑", "乙":"을", "丙":"병", "丁":"정", "戊":"무", "己":"기", "庚":"경", "辛":"신", "壬":"임", "癸":"계"}
-        zi_ko = {"子":"자", "丑":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "未":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
+        zi_ko = {"子":"자", "丑":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "미":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
 
         def format_ganzi(ganzi_str):
             if not ganzi_str or len(ganzi_str) < 2: return "?", "?"
@@ -66,15 +65,17 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             t_gan, t_zi = "?", "?"
         else:
             selected_zi = birth_time.split("(")[1][0] 
+            # 수정된 부분: 동경시 보정(30분 편차)을 위해 각 시의 중간값인 30분 단위를 반영하여 target_hour 설정
             hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "未":14, "申":16, "酉":18, "戌":20, "亥":22}
             target_hour = hour_map.get(selected_zi, 0)
             
             if calendar_type == "양력":
-                precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 0, 0)
+                # Solar.fromYmdHms에 30분을 인자로 추가하여 시간 경계 오류 방지
+                precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 30, 0)
                 precise_eight_char = precise_solar.getLunar().getEightChar()
             else:
-                # 수정된 부분: Lunar.fromYmdHms에 is_leap_month 인자 대입
-                precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 0, 0, is_leap_month)
+                # Lunar.fromYmdHms에 30분을 인자로 추가하여 시간 경계 오류 방지
+                precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, is_leap_month)
                 precise_eight_char = precise_lunar.getEightChar()
             
             t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
@@ -105,7 +106,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         samjae_groups = {
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
-            "巳": ["亥", "子", "丑"], "酉": ["亥", "자", "丑"], "丑": ["亥", "子", "丑"],
+            "巳": ["亥", "자", "丑"], "酉": ["亥", "자", "丑"], "丑": ["亥", "자", "丑"],
             "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
         }
         my_samjae_zis = samjae_groups.get(my_year_zi, [])
