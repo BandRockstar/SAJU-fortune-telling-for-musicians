@@ -289,10 +289,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
 """
         st.info(combined_report)
 
-    else:
-        st.warning("성함을 입력해 주세요.")
-
-# 🎸 [신규 기능] 오늘의 음악 운세
+   # 🎸 [신규 기능] 오늘의 음악 운세
         st.markdown('<div class="section-header">🎸 오늘의 음악적 운세 (Today\'s Groove)</div>', unsafe_allow_html=True)
         now = datetime.datetime.now()
         today_ganzi = Solar.fromYmd(now.year, now.month, now.day).getLunar().getEightChar().getDay()
