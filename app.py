@@ -3,7 +3,7 @@ from lunar_python import Solar, Lunar
 
 # 1. 페이지 설정 (모바일 최적화 레이아웃)
 st.set_page_config(
-    page_title="밴드맨을 위한 사주통변", 
+    page_title="음악인 사주풀이", 
     page_icon="☯️",
     layout="centered"
 )
