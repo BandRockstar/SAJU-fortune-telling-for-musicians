@@ -187,22 +187,10 @@ samjae_groups = {
 
 my_samjae_zis = samjae_groups.get(my_year_zi, [])
 
-# 입춘 기준 적용 (2월4일)
 target_solar = Solar.fromYmd(target_year, 2, 4)
 target_lunar = target_solar.getLunar()
 target_year_zi = target_lunar.getEightChar().getYear()[1]
 
-if target_year_zi in my_samjae_zis:
-    samjae_idx = my_samjae_zis.index(target_year_zi)
-    current_status = ["들삼재", "눌삼재", "날삼재"][samjae_idx]
-
-    st.error(
-        f"🚫 **삼재: {target_year}년은 귀하의 삼재 기간({current_status})입니다.**"
-    )
-else:
-    st.success(
-        f"✅ **삼재: {target_year}년은 삼재에 해당하지 않습니다.**"
-    )
         
         # 삼재 여부 판별 및 출력
         if target_year_zi in my_samjae_zis:
