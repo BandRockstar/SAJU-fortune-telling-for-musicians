@@ -291,3 +291,56 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
 
     else:
         st.warning("성함을 입력해 주세요.")
+
+# 🎸 [신규 기능] 오늘의 음악 운세 엔진 (익명성 및 전문성 강화 버전)
+        st.markdown('<div class="section-header">🎸 오늘의 음악적 운세 (Today\'s Groove)</div>', unsafe_allow_html=True)
+        
+        # 오늘 날짜의 간지 추출
+        import datetime
+        now = datetime.datetime.now()
+        today_solar = Solar.fromYmd(now.year, now.month, now.day)
+        today_lunar = today_solar.getLunar()
+        today_eight_char = today_lunar.getEightChar()
+        
+        # 오늘의 일진(日辰) 가져오기
+        today_ganzi = today_eight_char.getDay() 
+        tg_day, tz_day = today_ganzi[0], today_ganzi[1]
+        tg_day_ele = gan_elements.get(tg_day, "木")
+
+        # 십성 기반 음악적 테마
+        try:
+            day_diff = (ele_order.index(tg_day_ele) - ele_order.index(my_element)) % 5
+        except:
+            day_diff = 0
+
+        today_music_db = {
+            0: {"title": "솔로(Solo) & 주관", "desc": "자아의 에너지가 충만한 날입니다. 타인의 피드백보다는 본인의 직관을 믿고 톤을 잡아보세요. 독주나 개인 연습에서 독보적인 성과가 나옵니다."},
+            1: {"title": "즉흥(Improvisation) & 창의", "desc": "표현의 통로가 활짝 열리는 날입니다. 정해진 악보를 따르기보다 손 가는 대로 연주해 보세요. 오늘 떠오른 멜로디는 내일의 명곡이 됩니다."},
+            2: {"title": "앙상블(Ensemble) & 결실", "desc": "현실적인 감각과 조화가 뛰어난 날입니다. 합주 시 멤버들과의 합이 완벽하게 맞아떨어지며, 녹음이나 공연에서 실질적인 성과를 거두기 좋습니다."},
+            3: {"title": "그루브(Groove) & 절제", "desc": "정교한 컨트롤과 리듬감이 필요한 날입니다. 화려함보다는 기본기에 충실한 연주가 더 큰 울림을 줍니다. 밴드의 전체적인 밸런스를 살피기에 최적입니다."},
+            4: {"title": "리조넌스(Resonance) & 심화", "desc": "내면의 깊이를 더하고 영감을 흡수하는 날입니다. 연주보다는 새로운 사운드를 연구하거나 거장들의 연주를 분석하며 내공을 쌓기에 매우 유리합니다."}
+        }
+
+        # 행운의 사운드 아이템 (지지 기반)
+        today_item_db = {
+            "子": "깊고 풍부한 리버브", "丑": "정교한 튜닝과 새 스트링", "寅": "거칠고 야성적인 디스토션",
+            "卯": "경쾌한 어쿠스틱 텍스처", "辰": "변화무쌍한 모듈레이션", "巳": "선명하고 화려한 하이톤",
+            "午": "심장을 치는 로우 앤 펀치", "未": "따뜻하고 빈티지한 아날로그 톤", "申": "날카롭고 정교한 금속성 사운드",
+            "酉": "군더더기 없는 깔끔한 클린톤", "戌": "묵직하고 무게감 있는 배음", "亥": "몽환적이고 유연한 코러스"
+        }
+
+        day_info = today_music_db.get(day_diff)
+        lucky_item = today_item_db.get(tz_day, "자신만의 커스텀 장비")
+
+        # 결과 출력 (이름 제거)
+        st.info(f"""
+**📅 {now.year}년 {now.month}월 {now.day}일 ({today_ganzi}일)**
+
+* **오늘의 운용 테마:** {day_info['title']}
+* **뮤지션 가이드:** {day_info['desc']}
+* **행운의 사운드 소스:** {lucky_item}
+
+---
+**💡 리더의 조언:**
+오늘의 천간 기운은 '{tg_day_ele}'입니다. 본연의 기질인 '{my_element}'와 만나 새로운 에너지 흐름을 만들고 있군요. 기술적인 완벽주의보다는 오늘만 느낄 수 있는 고유의 그루브를 악기에 담아보시길 바랍니다.
+""")
