@@ -115,6 +115,14 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
 
 # 3. 분석 버튼 및 결과 도출 (로직 수정 절대 없음)
 if st.button("🎭 심층 이원 통변 리포트 생성"):
+    if st.button("🎭 심층 이원 통변 리포트 생성"):
+    if name:
+        # ✅ 바로 여기에 2단계 코드를 넣으세요!
+        current_count = increment_visit_count() 
+        
+        # (기존 코드 시작: if calendar_type == "양력": 등등...)
+        if calendar_type == "양력":
+            solar_obj = Solar.fromYmd(year, month, day)
     if name:
         # 데이터 계산부 (기존 로직 유지)
         if calendar_type == "양력":
