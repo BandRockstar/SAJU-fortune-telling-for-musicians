@@ -1,8 +1,31 @@
 import streamlit as st
 from lunar_python import Solar, Lunar
 
-# 1. 페이지 설정
-st.set_page_config(page_title="정통 사주 명리 분석", page_icon="☯️")
+# 1. 페이지 설정 (모바일 최적화 레이아웃)
+st.set_page_config(
+    page_title="정통 사주 명리 분석", 
+    page_icon="☯️",
+    layout="centered" # 모바일 가독성을 위해 중앙 집중 레이아웃 사용
+)
+
+# 모바일 대응 커스텀 CSS
+st.markdown("""
+    <style>
+    /* 박스 안의 텍스트 줄바꿈 방지 및 크기 조절 */
+    .stAlert p {
+        font-size: 0.9rem !important;
+        line-height: 1.5;
+    }
+    /* 사주 원국 박스 가독성 개선 */
+    div[data-testid="stMetricValue"] {
+        font-size: 1.2rem !important;
+    }
+    /* 모바일에서 컬럼 간격 최적화 */
+    [data-testid="column"] {
+        padding: 0 5px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 st.title("☯️ 정통 사주 명리 분석")
 
@@ -82,52 +105,51 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             
             t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
 
-        # 2층: 사주 원국 출력
+        # 2층: 사주 원국 출력 (모바일 최적화 배치)
         st.divider()
-        st.subheader(f"📊 {name}님 사주 원국 (8글자)")
+        st.subheader(f"📊 {name}님 사주 원국")
 
         col_t, col_d, col_m, col_y = st.columns(4)
         with col_y:
-            st.markdown("### 년주")
-            st.info(f"{y_gan}\n\n{y_zi}")
+            st.caption("년주")
+            st.info(f"{y_gan}\n{y_zi}")
         with col_m:
-            st.markdown("### 월주")
-            st.info(f"{m_gan}\n\n{m_zi}")
+            st.caption("월주")
+            st.info(f"{m_gan}\n{m_zi}")
         with col_d:
-            st.markdown("### 일주")
-            st.info(f"{d_gan}\n\n{d_zi}")
+            st.caption("일주")
+            st.info(f"{d_gan}\n{d_zi}")
         with col_t:
-            st.markdown("### 시주")
-            st.info(f"{t_gan}\n\n{t_zi}")
+            st.caption("시주")
+            st.info(f"{t_gan}\n{t_zi}")
 
-        st.write(f"**입력 정보:** {display_text} | {gender} | {birth_time}")
+        st.write(f"**정보:** {display_text} | {gender}")
 
         # 3층: 삼재 분석
         st.divider()
         my_year_zi = eight_char.getYear()[1]
-        # 수정된 부분: "미"를 "未"로 통일하여 오타 수정 완료
         samjae_groups = {
             "申": ["寅", "卯", "辰"], "子": ["寅", "卯", "辰"], "辰": ["寅", "卯", "辰"],
             "寅": ["申", "酉", "戌"], "午": ["申", "酉", "戌"], "戌": ["申", "酉", "戌"],
             "巳": ["亥", "子", "丑"], "酉": ["亥", "子", "丑"], "丑": ["亥", "子", "丑"],
-            "亥": ["巳", "오", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
+            "亥": ["巳", "午", "未"], "卯": ["巳", "午", "未"], "未": ["巳", "午", "未"]
         }
         my_samjae_zis = samjae_groups.get(my_year_zi, [])
         target_solar = Solar.fromYmd(target_year, 1, 1)
         target_year_zi = target_solar.getLunar().getEightChar().getYear()[1]
-        desc_text = "\n\n삼재는 9년마다 돌아오는 3년의 조심하는 시기를 뜻합니다."
+        desc_text = "\n\n삼재는 9년마다 돌아오는 3년의 조심하는 시기입니다."
 
         if target_year_zi in my_samjae_zis:
             samjae_idx = my_samjae_zis.index(target_year_zi)
             samjae_types = ["들삼재", "눌삼재", "날삼재"]
             current_status = samjae_types[samjae_idx]
-            st.error(f"🚫 **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간({current_status})에 해당합니다.**{desc_text}")
+            st.error(f"🚫 **삼재: {target_year}년은 귀하의 삼재 기간({current_status})입니다.**{desc_text}")
         else:
-            st.success(f"✅ **삼재(三災) 정보: {target_year}년은 귀하의 삼재 기간에 해당하지 않습니다.**{desc_text}")
+            st.success(f"✅ **삼재: {target_year}년은 삼재에 해당하지 않습니다.**{desc_text}")
 
         # 4층: 정통 명리 심층 통변
         st.divider()
-        st.subheader(f"📜 {name}님 사주 원국 정밀 분석 리포트")
+        st.subheader(f"📜 심층 통변 리포트")
 
         gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
         zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
@@ -148,29 +170,23 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             st.code(" | ".join(res_list))
         with col_res2:
             st.write("**[일간 속성]**")
-            st.code(f"{my_day_gan} ({my_element}의 기운)")
+            st.code(f"{my_day_gan} ({my_element})")
 
         max_ele = max(counts, key=counts.get)
-        part1 = f"{name}님의 사주 구성을 분석한 결과, 현재 {max_ele}의 기운이 {counts[max_ele]}개로 가장 강성한 세력을 형성하고 있습니다. "
+        part1 = f"{name}님의 사주 구성을 분석한 결과, 현재 {max_ele}의 기운이 {counts[max_ele]}개로 가장 강성합니다. "
         if counts[max_ele] >= 3:
-            part1 += "명리학적으로 특정 오행이 태과(太過)한 명조는 기질이 선명하고 주관이 뚜렷하여 자기 세계가 확고함을 의미합니다. 외부의 환경 변화에 휩쓸리기보다 자신의 신념과 원칙을 관철해 나가는 강인한 성정을 지녔습니다. "
+            part1 += "주관이 뚜렷하여 자기 세계가 확고함을 의미합니다. 외부 변화에 흔들리기보다 신념을 관철하는 강인한 성정을 지녔습니다. "
         else:
-            part1 += "오행의 분포가 전반적으로 중화(中和)를 이루고 있어 성품이 원만하고 매사에 균형 감각이 뛰어납니다. 편중되지 않은 시각으로 사물을 바라보며 주변 환경과 조화롭게 융화되는 유연한 기질을 갖추고 있습니다. "
+            part1 += "오행의 분포가 전반적으로 중화되어 성품이 원만하고 균형 감각이 뛰어납니다. 주변과 조화롭게 융화되는 기질을 갖추고 있습니다. "
 
         part2 = f"본신인 일간 {my_day_gan}은 {my_element}의 성질을 지니고 있습니다. "
-        if my_element == "木": part2 += "오상 중 인(仁)을 상징하며, 나무가 위로 뻗어 나가는 성질처럼 창의적인 기획력과 어질고 진취적인 마음을 품고 있습니다. "
-        elif my_element == "火": part2 += "오상 중 예(禮)를 상징하며, 불꽃이 주변을 밝히듯 열정적이고 자신을 드러내어 소통하려는 표현력이 강력한 기질입니다. "
-        elif my_element == "土": part2 += "오상 중 신(信)을 상징하며, 대지가 만물을 품듯 묵직하고 신의가 두터우며 매사에 신중하여 원칙을 변함없이 지켜나가는 중용의 덕이 있습니다. "
-        elif my_element == "金": part2 += "오상 중 의(義)를 상징하며, 금속의 날카로운 결단력처럼 시비지심이 분명하고 일 처리에 있어 완벽을 기하는 냉철한 성정입니다. "
-        else: part2 += "오상 중 지(智)를 상징하며, 물이 흐르듯 유연하고 지혜로우며 깊은 감수성과 영감을 바탕으로 내면의 통찰을 이뤄내는 명조입니다. "
+        if my_element == "木": part2 += "창의적인 기획력과 어질고 진취적인 마음을 품고 있습니다. "
+        elif my_element == "火": part2 += "열정적이고 자신을 드러내어 소통하려는 표현력이 강력합니다. "
+        elif my_element == "土": part2 += "묵직하고 신의가 두터우며 매사에 신중하여 원칙을 지켜나가는 중용의 덕이 있습니다. "
+        elif my_element == "金": part2 += "날카로운 결단력처럼 시비지심이 분명하고 완벽을 기하는 냉철한 성정입니다. "
+        else: part2 += "물이 흐르듯 유연하고 지혜로우며 깊은 통찰을 이뤄내는 명조입니다. "
 
-        part3 = f"사회적 환경과 격국을 결정짓는 월지의 {m_zi[0]}와 일간의 관계를 비추어 볼 때, {name}님은 "
-        if m_zi[0] in zi_elements and zi_elements[m_zi[0]] == my_element:
-            part3 += "비겁의 기운이 월지를 점하여 자아의 주체성이 대단히 강조되는 구조입니다. 독립적인 환경에서 본인의 역량을 발휘할 때 가장 큰 성과를 거두는 주체적 명조입니다. "
-        else:
-            part3 += "본인의 에너지를 외부의 목적이나 가치로 치환하는 능력이 발달하였습니다. 주어진 상황을 냉철하게 분석하고 이를 실무적인 결과물로 도출해내는 현실적 감각이 탁월합니다. "
-
-        st.info(part1 + "\n\n" + part2 + "\n\n" + part3)
+        st.info(part1 + "\n\n" + part2)
 
     else:
         st.warning("성함을 입력해 주세요.")
