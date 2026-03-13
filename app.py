@@ -2,9 +2,12 @@ import streamlit as st
 from lunar_python import Solar, Lunar
 
 # 1. 페이지 설정 (모바일 최적화 레이아웃)
-st.markdown("<h4 style='text-align:center; margin-top:-10px; margin-bottom:10px;'>☯️ 밴드맨을 위한 사주통변</h4>", unsafe_allow_html=True)
-</h3>
-""", unsafe_allow_html=True)
+st.set_page_config(
+    page_title="밴드맨을 위한 사주통변", 
+    page_icon="☯️",
+    layout="centered"
+)
+
 
 # 모바일 대응 커스텀 CSS (기존 유지 및 가독성 강화 추가)
 st.markdown("""
