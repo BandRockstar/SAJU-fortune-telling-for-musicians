@@ -3,7 +3,7 @@ from lunar_python import Solar, Lunar
 
 # 1. 페이지 설정 (모바일 최적화 레이아웃)
 st.set_page_config(
-    page_title="정통 사주 명리 분석", 
+    page_title="밴드맨을 위한 사주통변", 
     page_icon="☯️",
     layout="centered"
 )
@@ -35,7 +35,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
-st.title("☯️ 정통 사주 명리 분석")
+st.title("☯️ 밴드맨을 위한 사주통변")
 
 # 2. 사주 정보 입력 섹션 (1층: 고정)
 with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
@@ -106,10 +106,11 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             if calendar_type == "양력":
                 precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 30, 0)
                 precise_eight_char = precise_solar.getLunar().getEightChar()
+                t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
             else:
                 precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, is_leap_month)
                 precise_eight_char = precise_lunar.getEightChar()
-            t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
+                t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
 
         # 결과 화면 출력
         st.divider()
