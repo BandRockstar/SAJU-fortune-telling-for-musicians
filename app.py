@@ -114,13 +114,15 @@ with st.expander("📝 사주 정보 및 분석 설정", expanded=True):
     gender = st.radio("성별", ["남성", "여성"], horizontal=True)
 
 # 3. 분석 버튼 및 결과 도출 (로직 수정 절대 없음)
+# 3. 분석 버튼 및 결과 도출 (117번 줄부터 아래 내용으로 교체)
 if st.button("🎭 심층 이원 통변 리포트 생성"):
-    if st.button("🎭 심층 이원 통변 리포트 생성"):
     if name:
         current_count = increment_visit_count()
         st.sidebar.write(f"현재 누적 분석: {current_count}회")
-        st.write(f"🎉 현재까지 총 {current_count}번째 분석이 진행되었습니다.")
-    if name:
+        
+        # 여기서부터 데이터 계산부 (기존 124번 줄 내용이 이어짐)
+        if calendar_type == "양력":
+            date_obj = Solar.fromYmd(year, month, day)
         # 데이터 계산부 (기존 로직 유지)
         if calendar_type == "양력":
             date_obj = Solar.fromYmd(year, month, day)
