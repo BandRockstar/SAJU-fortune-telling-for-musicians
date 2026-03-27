@@ -120,27 +120,37 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         current_count = increment_visit_count()
         st.sidebar.write(f"현재 누적 분석: {current_count}회")
         
-        
-       # [124번 줄 시작] 데이터 계산부
+        # 여기서부터 데이터 계산부 (기존 124번 줄 내용이 이어짐)
+        if calendar_type == "양력":
+            date_obj = Solar.fromYmd(year, month, day)
+        # 데이터 계산부 (기존 로직 유지)
         if calendar_type == "양력":
             date_obj = Solar.fromYmd(year, month, day)
             lunar_obj = date_obj.getLunar()
             display_text = f"양력 {year}년 {month}월 {day}일"
         else:
-            # 음력 및 윤달 처리 (표준 방식)
-            lunar_obj = Lunar.fromYmd(year, month, day, is_leap_month)
+            if is_leap_month:
+                lunar_obj = Lunar.fromYmd(year, month, day, True)
+            else:
+                lunar_obj = Lunar.fromYmd(year, month, day)
             display_text = f"음력 {year}년 {month}월 {day}일" + (" (윤달)" if is_leap_month else " (평달)")
 
-        # 기본 간지 추출 (년, 월, 일)
         eight_char = lunar_obj.getEightChar()
+        
+        gan_ko = {"甲":"갑", "乙":"을", "丙":"병", "丁":"정", "戊":"무", "己":"기", "庚":"경", "辛":"신", "壬":"임", "癸":"계"}
+        zi_ko = {"子":"자", "丑":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "未":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
+
+        def format_ganzi(ganzi_str):
+            if not ganzi_str or len(ganzi_str) < 2: return "?", "?"
+            gan, zi = ganzi_str[0], ganzi_str[1]
+            return f"{gan}({gan_ko.get(gan, '')})", f"{zi}({zi_ko.get(zi, '')})"
+
         y_gan, y_zi = format_ganzi(eight_char.getYear())
         m_gan, m_zi = format_ganzi(eight_char.getMonth())
         d_gan, d_zi = format_ganzi(eight_char.getDay())
-
-        # 시주(Time) 계산 로직 시작
+        
         if birth_time == "모름":
             t_gan, t_zi = "?", "?"
-            precise_eight_char = eight_char
         else:
             selected_zi = ""
             for char in birth_time:
@@ -149,22 +159,52 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
                     break
             hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "未":14, "申":16, "酉":18, "戌":20, "亥":22}
             target_hour = hour_map.get(selected_zi, 0)
-
             if calendar_type == "양력":
                 precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 30, 0)
                 precise_eight_char = precise_solar.getLunar().getEightChar()
+                t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
             else:
-                precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, is_leap_month)
+                if is_leap_month:
+                    precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, True)
+                else:
+                    precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0)
                 precise_eight_char = precise_lunar.getEightChar()
+                t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
 
-            t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
+        # 결과 화면 출력 (구조 유지)
+        st.divider()
+        st.subheader(f"📊 {name}님 사주 원국")
+        col_t, col_d, col_m, col_y = st.columns(4)
+        with col_y:
+            st.caption("년주")
+            st.info(f"{y_gan}\n{y_zi}")
+        with col_m:
+            st.caption("월주")
+            st.info(f"{m_gan}\n{m_zi}")
+        with col_d:
+            st.caption("일주")
+            st.info(f"{d_gan}\n{d_zi}")
+        with col_t:
+            st.caption("시주")
+            st.info(f"{t_gan}\n{t_zi}")
+        st.write(f"**정보:** {display_text} | {gender}")
 
-        # 최종 정밀 계산된 데이터로 간지 재업데이트 (시주 반영)
-        y_gan, y_zi = format_ganzi(precise_eight_char.getYear())
-        m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())
-        d_gan, d_zi = format_ganzi(precise_eight_char.getDay())
-            st.markdown('<div class="section-header">🔍 일반 역학 통변 (기질 및 성정 분석)</div>', unsafe_allow_html=True)
-            col_res1, col_res2 = st.columns(2)
+        # 심층 통변 리포트 섹션 (기존 코드 유지 및 300자 이상 보장)
+        st.divider()
+        st.subheader(f"📜 {name}님 사주 리포트")
+        gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
+        zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
+        all_chars = [y_gan[0], y_zi[0], m_gan[0], m_zi[0], d_gan[0], d_zi[0], t_gan[0], t_zi[0]]
+        counts = {"木": 0, "火": 0, "土": 0, "金": 0, "水": 0}
+        for c in all_chars:
+            if c in gan_elements: counts[gan_elements[c]] += 1
+            elif c in zi_elements: counts[zi_elements[c]] += 1
+        my_day_gan = d_gan[0]
+        my_element = gan_elements.get(my_day_gan, "알수없음")
+        max_ele = max(counts, key=counts.get)
+
+        st.markdown('<div class="section-header">🔍 일반 역학 통변 (기질 및 성정 분석)</div>', unsafe_allow_html=True)
+        col_res1, col_res2 = st.columns(2)
         with col_res1:
             st.write("**[오행 분포]**")
             res_list = [f"{k}({counts[k]})" for k in ["木", "火", "土", "金", "水"]]
