@@ -190,18 +190,32 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         st.write(f"**정보:** {display_text} | {gender}")
 
         # 심층 통변 리포트 섹션 (기존 코드 유지 및 300자 이상 보장)
-        st.divider()
-        st.subheader(f"📜 {name}님 사주 리포트")
-        gan_elements = {"甲":"木", "乙":"木", "丙":"火", "丁":"火", "戊":"土", "己":"土", "庚":"金", "辛":"金", "壬":"水", "癸":"水"}
-        zi_elements = {"寅":"木", "卯":"木", "巳":"火", "午":"火", "申":"金", "酉":"金", "亥":"水", "子":"水", "辰":"土", "戌":"土", "丑":"土", "未":"土"}
-        all_chars = [y_gan[0], y_zi[0], m_gan[0], m_zi[0], d_gan[0], d_zi[0], t_gan[0], t_zi[0]]
-        counts = {"木": 0, "火": 0, "土": 0, "金": 0, "水": 0}
-        for c in all_chars:
-            if c in gan_elements: counts[gan_elements[c]] += 1
-            elif c in zi_elements: counts[zi_elements[c]] += 1
-        my_day_gan = d_gan[0]
-        my_element = gan_elements.get(my_day_gan, "알수없음")
-        max_ele = max(counts, key=counts.get)
+        else:
+            selected_zi = ""
+            for char in birth_time:
+                if char in zi_ko:
+                    selected_zi = char
+                    break
+            hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "未":14, "申":16, "酉":18, "戌":20, "亥":22}
+            target_hour = hour_map.get(selected_zi, 0)
+            
+            try:
+                if calendar_type == "양력":
+                    precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 30, 0)
+                    precise_eight_char = precise_solar.getLunar().getEightChar()
+                else:
+                    # isLeap=is_leap_month를 명시하여 윤달 인자 오류를 방지합니다.
+                    precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, isLeap=is_leap_month)
+                    precise_eight_char = precise_lunar.getEightChar()
+                
+                t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
+                # 시주에 의해 변동될 수 있는 년/월/일주를 정밀 데이터로 재추출하여 업데이트합니다.
+                y_gan, y_zi = format_ganzi(precise_eight_char.getYear())
+                m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())
+                d_gan, d_zi = format_ganzi(precise_eight_char.getDay())
+            except Exception as e:
+                st.error(f"입력하신 날짜와 윤달 설정에 오류가 있습니다: {e}")
+                st.stop()
 
         st.markdown('<div class="section-header">🔍 일반 역학 통변 (기질 및 성정 분석)</div>', unsafe_allow_html=True)
         col_res1, col_res2 = st.columns(2)
