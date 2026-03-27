@@ -162,7 +162,7 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
                 t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
             else:
                 if is_leap_month:
-                   precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, True)
+                   precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, isLeap=True)
                 else:
                    precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0)
                    precise_eight_char = precise_lunar.getEightChar()
