@@ -129,8 +129,8 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         else:
             # isLeap 인자를 명시적으로 전달
             lunar_obj = Lunar.fromYmd(year, month, day)
-            if is_leap_month:
-                lunar_obj = Lunar.fromYmd(year, month, day).getLeapMonth()
+        if is_leap_month:
+            lunar_obj = Lunar.fromYmd(year, month, day).getLeapMonth()
             display_text = f"음력 {year}년 {month}월 {day}일" + (" (윤달)" if is_leap_month else " (평달)")
 
         y_gan, y_zi = format_ganzi(eight_char.getYear())
