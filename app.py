@@ -120,20 +120,16 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         current_count = increment_visit_count()
         st.sidebar.write(f"현재 누적 분석: {current_count}회")
         
-        # 여기서부터 데이터 계산부 (기존 124번 줄 내용이 이어짐)
-       # 데이터 계산부 (윤달 에러 수정 버전)
+        
+       # 데이터 계산부 (들여쓰기 및 윤달 에러 수정)
         if calendar_type == "양력":
             date_obj = Solar.fromYmd(year, month, day)
             lunar_obj = date_obj.getLunar()
             display_text = f"양력 {year}년 {month}월 {day}일"
         else:
-            # 키워드 인자(isLeap)를 사용하여 TypeError 방지
+            # isLeap 키워드를 사용하여 TypeError와 SyntaxError 방지
             lunar_obj = Lunar.fromYmd(year, month, day, isLeap=is_leap_month)
             display_text = f"음력 {year}년 {month}월 {day}일" + (" (윤달)" if is_leap_month else " (평달)")
-        eight_char = lunar_obj.getEightChar()
-        
-        gan_ko = {"甲":"갑", "乙":"을", "丙":"병", "丁":"정", "戊":"무", "己":"기", "庚":"경", "辛":"신", "壬":"임", "癸":"계"}
-        zi_ko = {"子":"자", "丑":"축", "寅":"인", "卯":"묘", "辰":"진", "巳":"사", "午":"오", "未":"미", "申":"신", "酉":"유", "戌":"술", "亥":"해"}
 
         def format_ganzi(ganzi_str):
             if not ganzi_str or len(ganzi_str) < 2: return "?", "?"
