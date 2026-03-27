@@ -200,9 +200,9 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
 
         # 최종적으로 시주가 반영된 데이터로 년, 월, 일, 시주 업데이트
         # 이 줄들은 위 if/else 문과 시작 위치(들여쓰기)가 같아야 합니다.
-         y_gan, y_zi = format_ganzi(precise_eight_char.getYear())
-         m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())
-         d_gan, d_zi = format_ganzi(precise_eight_char.getDay())
+            y_gan, y_zi = format_ganzi(precise_eight_char.getYear())   
+            m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())  
+            d_gan, d_zi = format_ganzi(precise_eight_char.getDay())   
          st.markdown('<div class="section-header">🔍 일반 역학 통변 (기질 및 성정 분석)</div>', unsafe_allow_html=True)
          col_res1, col_res2 = st.columns(2)
         with col_res1:
