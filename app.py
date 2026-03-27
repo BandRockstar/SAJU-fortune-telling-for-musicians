@@ -198,14 +198,11 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
 
             t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
 
-        # 최종적으로 시주가 반영된 데이터로 년, 월, 일주 재업데이트
+        # 최종적으로 시주가 반영된 데이터로 년, 월, 일, 시주 업데이트
+        # 이 줄들은 위 if/else 문과 시작 위치(들여쓰기)가 같아야 합니다.
         y_gan, y_zi = format_ganzi(precise_eight_char.getYear())
         m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())
-        t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
-                # 아래 네 줄의 시작 위치(세로 정렬)를 위 줄과 똑같이 맞추세요
-                y_gan, y_zi = format_ganzi(precise_eight_char.getYear())
-                m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())
-                d_gan, d_zi = format_ganzi(precise_eight_char.getDay())
+        d_gan, d_zi = format_ganzi(precise_eight_char.getDay())
                 st.error(f"입력하신 날짜와 윤달 설정에 오류가 있습니다: {e}")
                 st.stop()
 
