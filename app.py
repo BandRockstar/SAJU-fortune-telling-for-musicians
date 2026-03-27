@@ -121,61 +121,26 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         st.sidebar.write(f"현재 누적 분석: {current_count}회")
         
         
-       # 데이터 계산부 (124~137번 줄 교체용)
+       # [124번 줄 시작] 데이터 계산부
         if calendar_type == "양력":
             date_obj = Solar.fromYmd(year, month, day)
             lunar_obj = date_obj.getLunar()
             display_text = f"양력 {year}년 {month}월 {day}일"
         else:
-            # isLeap 인자를 명시적으로 전달
-            lunar_obj = Lunar.fromYmd(year, month, day)
-        if is_leap_month:
-            lunar_obj = Lunar.fromYmd(year, month, day).getLeapMonth()
+            # 음력 및 윤달 처리 (표준 방식)
+            lunar_obj = Lunar.fromYmd(year, month, day, is_leap_month)
             display_text = f"음력 {year}년 {month}월 {day}일" + (" (윤달)" if is_leap_month else " (평달)")
 
+        # 기본 간지 추출 (년, 월, 일)
+        eight_char = lunar_obj.getEightChar()
         y_gan, y_zi = format_ganzi(eight_char.getYear())
         m_gan, m_zi = format_ganzi(eight_char.getMonth())
         d_gan, d_zi = format_ganzi(eight_char.getDay())
-        
-        if birth_time == "모름":
-            t_gan, t_zi = "?", "?"
-        else:
-            selected_zi = ""
-            for char in birth_time:
-                if char in zi_ko:
-                    selected_zi = char
-                    break
-            hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "未":14, "申":16, "酉":18, "戌":20, "亥":22}
-            target_hour = hour_map.get(selected_zi, 0)
-            if calendar_type == "양력":
-                precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 30, 0)
-                precise_eight_char = precise_solar.getLunar().getEightChar()
-                t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
-            else:
-                if is_leap_month:
-                    precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, True)
-                else:
-                    precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0)
-                precise_eight_char = precise_lunar.getEightChar()
-                t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
 
-        # 결과 화면 출력 (구조 유지)
-        st.divider()
-        st.subheader(f"📊 {name}님 사주 원국")
-        col_t, col_d, col_m, col_y = st.columns(4)
-        with col_y:
-            st.caption("년주")
-            st.info(f"{y_gan}\n{y_zi}")
-        with col_m:
-            st.caption("월주")
-            st.info(f"{m_gan}\n{m_zi}")
-        with col_d:
-            st.caption("일주")
-            st.info(f"{d_gan}\n{d_zi}")
+        # 시주(Time) 계산 로직 시작
         if birth_time == "모름":
             t_gan, t_zi = "?", "?"
-            # 시주를 모를 경우 기본 lunar_obj에서 팔자 추출
-            precise_eight_char = lunar_obj.getEightChar()
+            precise_eight_char = eight_char
         else:
             selected_zi = ""
             for char in birth_time:
@@ -189,17 +154,15 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
                 precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 30, 0)
                 precise_eight_char = precise_solar.getLunar().getEightChar()
             else:
-                # isLeap=is_leap_month를 명시하여 인자 오류 방지
-                precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, isLeap=is_leap_month)
+                precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, is_leap_month)
                 precise_eight_char = precise_lunar.getEightChar()
 
             t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
 
-        # 최종적으로 시주가 반영된 데이터로 년, 월, 일, 시주 업데이트
-        # 이 줄들은 위 if/else 문과 시작 위치(들여쓰기)가 같아야 합니다.
-            y_gan, y_zi = format_ganzi(precise_eight_char.getYear())   
-            m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())  
-            d_gan, d_zi = format_ganzi(precise_eight_char.getDay())   
+        # 최종 정밀 계산된 데이터로 간지 재업데이트 (시주 반영)
+        y_gan, y_zi = format_ganzi(precise_eight_char.getYear())
+        m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())
+        d_gan, d_zi = format_ganzi(precise_eight_char.getDay())
             st.markdown('<div class="section-header">🔍 일반 역학 통변 (기질 및 성정 분석)</div>', unsafe_allow_html=True)
             col_res1, col_res2 = st.columns(2)
         with col_res1:
