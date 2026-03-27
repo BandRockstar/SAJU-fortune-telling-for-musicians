@@ -175,12 +175,10 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
         with col_d:
             st.caption("일주")
             st.info(f"{d_gan}\n{d_zi}")
-        with col_t:
-            st.caption("시주")
-            st.info(f"{t_gan}\n{t_zi}")
-        st.write(f"**정보:** {display_text} | {gender}")
-
-        # 심층 통변 리포트 섹션 (기존 코드 유지 및 300자 이상 보장)
+        if birth_time == "모름":
+            t_gan, t_zi = "?", "?"
+            # 시주를 모를 경우 기본 lunar_obj에서 팔자 추출
+            precise_eight_char = lunar_obj.getEightChar()
         else:
             selected_zi = ""
             for char in birth_time:
@@ -189,19 +187,21 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
                     break
             hour_map = {"子":0, "丑":2, "寅":4, "卯":6, "辰":8, "巳":10, "午":12, "未":14, "申":16, "酉":18, "戌":20, "亥":22}
             target_hour = hour_map.get(selected_zi, 0)
-            
-            try:
-                if calendar_type == "양력":
-                    precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 30, 0)
-                    precise_eight_char = precise_solar.getLunar().getEightChar()
-                else:
-                    # isLeap=is_leap_month를 명시하여 윤달 인자 오류를 방지합니다.
-                    precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, isLeap=is_leap_month)
-                    precise_eight_char = precise_lunar.getEightChar()
-                
-                t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
-                # 시주에 의해 변동될 수 있는 년/월/일주를 정밀 데이터로 재추출하여 업데이트합니다.
-                y_gan, y_zi = format_ganzi(precise_eight_char.getYear())
+
+            if calendar_type == "양력":
+                precise_solar = Solar.fromYmdHms(year, month, day, target_hour, 30, 0)
+                precise_eight_char = precise_solar.getLunar().getEightChar()
+            else:
+                # isLeap=is_leap_month를 명시하여 인자 오류 방지
+                precise_lunar = Lunar.fromYmdHms(year, month, day, target_hour, 30, 0, isLeap=is_leap_month)
+                precise_eight_char = precise_lunar.getEightChar()
+
+            t_gan, t_zi = format_ganzi(precise_eight_char.getTime())
+
+        # 최종적으로 시주가 반영된 데이터로 년, 월, 일주 재업데이트
+        y_gan, y_zi = format_ganzi(precise_eight_char.getYear())
+        m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())
+        d_gan, d_zi = format_ganzi(precise_eight_char.getDay())
                 m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())
                 d_gan, d_zi = format_ganzi(precise_eight_char.getDay())
             except Exception as e:
