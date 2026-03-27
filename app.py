@@ -203,8 +203,8 @@ if st.button("🎭 심층 이원 통변 리포트 생성"):
             y_gan, y_zi = format_ganzi(precise_eight_char.getYear())   
             m_gan, m_zi = format_ganzi(precise_eight_char.getMonth())  
             d_gan, d_zi = format_ganzi(precise_eight_char.getDay())   
-         st.markdown('<div class="section-header">🔍 일반 역학 통변 (기질 및 성정 분석)</div>', unsafe_allow_html=True)
-         col_res1, col_res2 = st.columns(2)
+            st.markdown('<div class="section-header">🔍 일반 역학 통변 (기질 및 성정 분석)</div>', unsafe_allow_html=True)
+            col_res1, col_res2 = st.columns(2)
         with col_res1:
             st.write("**[오행 분포]**")
             res_list = [f"{k}({counts[k]})" for k in ["木", "火", "土", "金", "水"]]
